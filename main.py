@@ -190,8 +190,8 @@ nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_previous_image)
 nextImage = QtGui.QShortcut('D',mainWindow)
 nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
 
-# The lines that follow could be seen as the main function.
-internalState = InternalState()
-clear() #Put the program in its beginning state.
-mainWindow.show()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    internalState = InternalState()
+    clear() #Put the program in its beginning state.
+    mainWindow.show()
+    sys.exit(app.exec_())
