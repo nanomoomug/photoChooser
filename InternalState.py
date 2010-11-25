@@ -19,6 +19,7 @@ import os
 from PyQt4 import QtGui, QtCore
 
 from ImageLoader import ImageLoader
+from InternalException import InternalException
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -29,8 +30,20 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
+alreadyInstantiated = False
+
 class InternalState:
     def __init__(self):
+        global alreadyInstantiated
+        if alreadyInstantiated:
+            raise InternalException('InternalState instantiated more than one '
+                                    + 'time. '
+                                    + 'It should be treated as a singleton.')
+        else:            
+            alreadyInstantiated = True
+            self.reset()
+
+    def reset(self):
         self.imagesList = []
         self.transformations = {}
         self.pos = -1
@@ -186,7 +199,7 @@ class InternalState:
         self.imagesList.pop(self.pos)
         if self.pos == len(self.imagesList):
             if len(self.imagesList) == 0:
-                self.__init__()
+                self.reset()
                 return
             self.pos = len(self.imagesList) - 1
         if lastPosDel:
