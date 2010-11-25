@@ -44,19 +44,19 @@ class InternalState:
         self.nextPic = QtGui.QPixmap()
         self.nextPicScaled = QtGui.QPixmap()
     
-    def isAtLastPosition(self):
+    def is_at_last_position(self):
         return self.pos == len(self.imagesList) - 1
 
-    def isAtFirstPosition(self):
+    def is_at_first_position(self):
         return self.pos == 0
 
-    def getCurrentImageNumber(self):
+    def get_current_image_number(self):
         return self.pos + 1
 
-    def getTotalNumberImages(self):
+    def get_total_number_images(self):
         return len(self.imagesList)
 
-    def startNextLoader(self, path, viewportSize):
+    def start_next_loader(self, path, viewportSize):
         if path in self.transformations:
             self.loader = ImageLoader(path, viewportSize,
                                       self.transformations[path])
@@ -64,7 +64,7 @@ class InternalState:
             self.loader = ImageLoader(path, viewportSize)
         self.loader.start()
 
-    def nextImage(self, viewportSize):
+    def next_image(self, viewportSize):
         self.pos += 1
         if (self.pos >= len(self.imagesList)):
             self.pos = len(self.imagesList) - 1
@@ -84,11 +84,11 @@ class InternalState:
             self.currentPic = self.nextPic
             self.currentPicScaled = self.nextPicScaled
         if (self.pos < len(self.imagesList) - 1):
-            path = self.currentImageCompletePathPos(self.pos + 1)
-            self.startNextLoader(path, viewportSize)
+            path = self.current_image_complete_path_pos(self.pos + 1)
+            self.start_next_loader(path, viewportSize)
         self.movingForward = True
 
-    def previousImage(self, viewportSize):
+    def previous_image(self, viewportSize):
         self.pos -= 1
         if (self.pos < 0):
             self.pos = 0
@@ -108,27 +108,27 @@ class InternalState:
             self.currentPic = self.previousPic
             self.currentPicScaled = self.previousPicScaled
         if (self.pos > 0):
-            path = self.currentImageCompletePathPos(self.pos - 1)
-            self.startNextLoader(path, viewportSize)
+            path = self.current_image_complete_path_pos(self.pos - 1)
+            self.start_next_loader(path, viewportSize)
         self.movingForward = False
 
-    def imageAvailable(self):
+    def image_available(self):
         return not len(self.imagesList) == 0
 
-    def currentImage(self):
-        if not self.imageAvailable():
+    def current_image(self):
+        if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
         return self.currentPic
 
-    def currentImageScaled(self):
-        if not self.imageAvailable():
+    def current_image_scaled(self):
+        if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
         return self.currentPicScaled
 
-    def setScaledImage(self, newImage):
+    def set_scaled_image(self, newImage):
         self.currentPicScaled = newImage
 
-    def rescaleImages(self, viewportSize):
+    def rescale_images(self, viewportSize):
         self.recentlyRescaled = True
         if not self.currentPic.isNull():
             self.currentPicScaled = self.currentPic.scaled(
@@ -140,31 +140,32 @@ class InternalState:
             self.nextPicScaled = self.nextPic.scaled(
                 viewportSize, QtCore.Qt.KeepAspectRatio)
 
-    def currentImageCompletePath(self):
-         return self.currentImageCompletePathPos(self.pos)
+    def current_image_complete_path(self):
+         return self.current_image_complete_path_pos(self.pos)
 
-    def currentImageCompletePathPos(self, pos):
-        if not self.imageAvailable():
+    def current_image_complete_path_pos(self, pos):
+        if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
         (dir,f) = self.imagesList[pos]
         return dir + '/' + f
 
-    def currentDirectory(self):
+    def current_directory(self):
         (d,_) = self.imagesList[self.pos]
         return d
 
-    def currentImageName(self):
+    def current_image_name(self):
         (_,n) = self.imagesList[self.pos]
         return n
 
-    # I got this list from the Qt documentation.
-    imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
-                     '.ppm','.pmb','.pgm','.xbm','.xpm']
-    def getImagesList(self, dir):
+    
+    def get_images_list(self, dir):
+        # I got this list from the Qt documentation.
+        imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
+                         '.ppm','.pmb','.pgm','.xbm','.xpm']
         allList = os.listdir(dir)
         selected = filter(lambda x:
                           any(map(lambda y:
-                                  x.lower().endswith(y), self.imgExtensions)),
+                                  x.lower().endswith(y), imgExtensions)),
                           allList)
         return map(lambda x: (dir,x), selected)
 
@@ -172,14 +173,15 @@ class InternalState:
         self.imagesList = []
         for f in dirList:
             if os.path.isdir(f):
-                self.imagesList.extend(self.getImagesList(f))
+                self.imagesList.extend(self.get_images_list(f))
         self.pos = -1
         if len(self.imagesList) == 0:
             return
-        self.startNextLoader(self.currentImageCompletePathPos(0), viewportSize)
+        self.start_next_loader(self.current_image_complete_path_pos(0),
+                                viewportSize)
         self.movingForward = True
 
-    def removeCurrentImage(self, viewportSize):
+    def remove_current_image(self, viewportSize):
         lastPosDel = self.pos == len(self.imagesList) - 1
         self.imagesList.pop(self.pos)
         if self.pos == len(self.imagesList):
@@ -190,7 +192,7 @@ class InternalState:
         if lastPosDel:
             self.currentPic = self.previousPic
             self.currentPicScaled = self.previousPicScaled
-            fileName = self.currentImageCompletePathPos(self.pos - 1)
+            fileName = self.current_image_complete_path_pos(self.pos - 1)
             self.previousPic = QtGui.QPixmap(fileName)
             self.previousPicScaled = self.previousPic.scaled(
                 viewportSize, QtCore.Qt.KeepAspectRatio)
@@ -199,4 +201,4 @@ class InternalState:
             self.currentPic = self.previousPic
             self.currentPicScaled = self.previousPicScaled
             self.pos -= 1
-            self.nextImage(viewportSize)
+            self.next_image(viewportSize)

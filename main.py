@@ -58,7 +58,7 @@ originalResizeEvent = scrollArea.resizeEvent
 def f(event):
     originalResizeEvent(event)
     viewportSize = scrollArea.maximumViewportSize()
-    internalState.rescaleImages(viewportSize)
+    internalState.rescale_images(viewportSize)
 scrollArea.resizeEvent = f
 
 # TODO: Find a nice icon that I'm allowed to use.
@@ -73,28 +73,28 @@ listView = fileDialog.findChild(QtGui.QListView,'listView')
 listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
 
 ### Define some function that make up the functionality of the program.
-def showImage():
-    if not internalState.imageAvailable():
+def show_image():
+    if not internalState.image_available():
         return
-    image = internalState.currentImageScaled()
+    image = internalState.current_image_scaled()
     imageArea.setPixmap(image)
-    text = "" + internalState.currentImageCompletePath()
-    pos = internalState.getCurrentImageNumber()
-    total = internalState.getTotalNumberImages()
+    text = "" + internalState.current_image_complete_path()
+    pos = internalState.get_current_image_number()
+    total = internalState.get_total_number_images()
     text += '  [' + str(pos) + '/' + str(total) + ']'
     statusBarLabel.setText(text)
 
-def fitImage():
-    if not internalState.imageAvailable():
+def fit_image():
+    if not internalState.image_available():
         return
-    pix = internalState.currentImage()
+    pix = internalState.current_image()
     imageArea.setPixmap(pix.scaled(scrollArea.maximumViewportSize(),
                                    QtCore.Qt.KeepAspectRatio))
 
 def zoom(scaleFactor):
-    if not internalState.imageAvailable():
+    if not internalState.image_available():
         return
-    pix = internalState.currentImage()
+    pix = internalState.current_image()
     newSize = imageArea.size() * scaleFactor
     imageArea.setPixmap(pix.scaled(newSize, QtCore.Qt.KeepAspectRatio))
     newSize = imageArea.pixmap().size()
@@ -102,36 +102,36 @@ def zoom(scaleFactor):
                              scrollArea.maximumViewportSize().width()/2.0,
                              scrollArea.maximumViewportSize().height()/2.0)
 
-def zoomIn():
+def zoom_in():
     zoom(1.25)
 
-def zoomOut():
+def zoom_out():
     zoom(0.8)
 
-def showNextImage():
-    internalState.nextImage(scrollArea.maximumViewportSize())
-    showImage()
+def show_next_image():
+    internalState.next_image(scrollArea.maximumViewportSize())
+    show_image()
 
-def showPreviousImage():
-    internalState.previousImage(scrollArea.maximumViewportSize())
-    showImage()
+def show_previous_image():
+    internalState.previous_image(scrollArea.maximumViewportSize())
+    show_image()
 
-def discardImage():
-    if not internalState.imageAvailable():
+def discard_image():
+    if not internalState.image_available():
         return
     
-    cd = internalState.currentDirectory();
+    cd = internalState.current_directory();
     if not os.path.exists(cd + '/discarded'):
         os.mkdir(cd + '/discarded')
     if not os.path.isdir(cd + '/discarded'):
         raise InternalException('A file named discarded was found. ' +
                                 'A folder of that name to move the photos' +
                                 'to could not be created.')
-    shutil.move(internalState.currentImageCompletePath(),
-                cd + '/discarded/' + internalState.currentImageName())
-    internalState.removeCurrentImage(scrollArea.maximumViewportSize())
-    if internalState.imageAvailable():
-        showImage()
+    shutil.move(internalState.current_image_complete_path(),
+                cd + '/discarded/' + internalState.current_image_name())
+    internalState.remove_current_image(scrollArea.maximumViewportSize())
+    if internalState.image_available():
+        show_image()
     else:
         clear()
 
@@ -140,55 +140,55 @@ def clear():
     statusBarLabel.clear()
     imageArea.setText('No images loaded...')
 
-def rotateImage(degrees):
-    name = internalState.currentImageCompletePath()
+def rotate_image(degrees):
+    name = internalState.current_image_complete_path()
     if name in internalState.transformations:
         matrix = internalState.transformations[name]
     else:
         matrix = QtGui.QMatrix()
     matrix.rotate(degrees)
-    pix = internalState.currentImage()
+    pix = internalState.current_image()
     transformed = pix.transformed(matrix).scaled(
         scrollArea.maximumViewportSize(),
         QtCore.Qt.KeepAspectRatio)
     imageArea.setPixmap(transformed)
 
-    internalState.setScaledImage(transformed)
+    internalState.set_scaled_image(transformed)
     internalState.transformations[name] = matrix
 
-def rotateImageRight():
-    rotateImage(90)
+def rotate_image_right():
+    rotate_image(90)
 
-def rotateImageLeft():
-    rotateImage(-90)
+def rotate_image_left():
+    rotate_image(-90)
 
 # Ask the user to select a direcory and save it in 'internalState.directory'.
-def chooseImagesToKeep():
+def choose_images_to_keep():
     if not fileDialog.exec_():
         return
 
     res = fileDialog.selectedFiles()
     internalState.start(res, scrollArea.maximumViewportSize())
-    showNextImage()
+    show_next_image()
 
 # Here signal-slot connections are added manually.
 actionChoose.connect(actionChoose, QtCore.SIGNAL('triggered()'),
-                     chooseImagesToKeep)
+                     choose_images_to_keep)
 actionQuit.connect(actionQuit, QtCore.SIGNAL('triggered()'),
                    QtGui.qApp, QtCore.SLOT('quit()'))
-actionFit.connect(actionFit, QtCore.SIGNAL('triggered()'), fitImage)
-actionZoomIn.connect(actionZoomIn, QtCore.SIGNAL('triggered()'), zoomIn)
-actionZoomOut.connect(actionZoomOut, QtCore.SIGNAL('triggered()'), zoomOut)
+actionFit.connect(actionFit, QtCore.SIGNAL('triggered()'), fit_image)
+actionZoomIn.connect(actionZoomIn, QtCore.SIGNAL('triggered()'), zoom_in)
+actionZoomOut.connect(actionZoomOut, QtCore.SIGNAL('triggered()'), zoom_out)
 actionRotateRight.connect(actionRotateRight, QtCore.SIGNAL('triggered()'),
-                          rotateImageRight)
+                          rotate_image_right)
 actionRotateLeft.connect(actionRotateLeft, QtCore.SIGNAL('triggered()'),
-                         rotateImageLeft)
+                         rotate_image_left)
 nextImage = QtGui.QShortcut('N',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), showNextImage)
+nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_next_image)
 nextImage = QtGui.QShortcut('B',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), showPreviousImage)
+nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_previous_image)
 nextImage = QtGui.QShortcut('D',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discardImage)
+nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
 
 # The lines that follow could be seen as the main function.
 internalState = InternalState()
