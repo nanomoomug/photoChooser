@@ -12,14 +12,15 @@ At last all signal and slots are connected with the correct function and
 shortcuts and the program is started by calling the qt main loop.
 """
 
-from InternalException import *
-from InternalState import *
-
 import sys
 import os
 import shutil
+
 from PyQt4 import QtGui, QtCore
 from PyQt4 import uic
+
+from InternalException import InternalException
+from InternalState import InternalState
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"

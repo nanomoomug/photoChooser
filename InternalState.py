@@ -14,11 +14,11 @@ The internal state keeps track of:
 The images are never fetched locally, they are always loaded using
 'ImageLoader'.
 """
-
-from ImageLoader import *
-
 import os
+
 from PyQt4 import QtGui, QtCore
+
+from ImageLoader import ImageLoader
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"

@@ -17,8 +17,11 @@ outside of the main thread.
 """
 
 from threading import Thread
+
 from PyQt4 import QtGui, QtCore
 import pyexiv2
+
+
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
