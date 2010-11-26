@@ -30,6 +30,46 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
+def scale_image(toScale, filename, maximumViewportSize, matrix=QtGui.QMatrix()):
+    
+    metadata = pyexiv2.metadata.ImageMetadata(str(filename))
+    metadata.read()
+    
+    if 'Exif.Image.Orientation' in metadata.exif_keys:
+        orientation = metadata['Exif.Image.Orientation'].raw_value
+        orientation = int(orientation)
+        preMatrix = QtGui.QMatrix()
+            
+        if 1 <= orientation <= 2:
+            if orientation == 2:
+                preMatrix.scale(-1, 1)
+        elif 7 <= orientation <= 8:
+            preMatrix.rotate(-90)
+            if orientation == 7:
+                preMatrix.scale(-1, 1)
+        elif 3 <= orientation <= 4:
+            preMatrix.rotate(180)
+            if orientation == 4:
+                preMatrix.scale(-1, 1)
+        elif 5 <= orientation <= 6:
+            preMatrix.rotate(90)
+            if orientation == 5:
+                preMatrix.scale(-1, 1)
+
+        if (orientation > 8):
+            print Exception('The value for \'Exif.Image.Orientation\' '
+                            + 'is greater than 8, which should never be '
+                            + 'the case. The Orientation shown may be '
+                            + 'wrong.')
+                
+        if not preMatrix.isIdentity():
+            toScale = toScale.transformed(preMatrix)
+                
+    if not matrix.isIdentity():
+        toScale = toScale.transformed(matrix)
+    
+    return toScale.scaled(maximumViewportSize, QtCore.Qt.KeepAspectRatio)
+
 class ImageLoader(Thread):
     def __init__(self, filename, viewportSize, matrix=QtGui.QMatrix()):
         Thread.__init__(self)
@@ -39,41 +79,7 @@ class ImageLoader(Thread):
     
     def run(self):
         self.image = QtGui.QImage(self.filename)
-        toScale = self.image
-        metadata = pyexiv2.metadata.ImageMetadata(str(self.filename))
-        metadata.read()
-        if 'Exif.Image.Orientation' in metadata.exif_keys:
-            orientation = metadata['Exif.Image.Orientation'].raw_value
-            orientation = int(orientation)
-            preMatrix = QtGui.QMatrix()
-            
-            if 1 <= orientation <= 2:
-                if orientation == 2:
-                    preMatrix.scale(-1, 1)
-            elif 7 <= orientation <= 8:
-                preMatrix.rotate(-90)
-                if orientation == 7:
-                    preMatrix.scale(-1, 1)
-            elif 3 <= orientation <= 4:
-                preMatrix.rotate(180)
-                if orientation == 4:
-                    preMatrix.scale(-1, 1)
-            elif 5 <= orientation <= 6:
-                preMatrix.rotate(90)
-                if orientation == 5:
-                    preMatrix.scale(-1, 1)
-
-            if (orientation > 8):
-                print Exception('The value for \'Exif.Image.Orientation\' '
-                                + 'is greater than 8, which should never be '
-                                + 'the case. The Orientation shown may be '
-                                + 'wrong.')
-                
-            if not preMatrix.isIdentity():
-                toScale = toScale.transformed(preMatrix)
-                
-        if not self.matrix.isIdentity():
-            toScale = toScale.transformed(self.matrix)
-            
-        self.imageScaled = toScale.scaled(self.maximumViewportSize,
-                                          QtCore.Qt.KeepAspectRatio)
+        self.imageScaled = scale_image(self.image,
+                                       self.filename,
+                                       self.maximumViewportSize,
+                                       self.matrix)
