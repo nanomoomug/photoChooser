@@ -199,23 +199,18 @@ class InternalState:
         self.movingForward = True
 
     def remove_current_image(self, viewportSize):
-        lastPosDel = self.pos == len(self.imagesList) - 1
-        self.imagesList.pop(self.pos)
-        if self.pos == len(self.imagesList):
-            if len(self.imagesList) == 0:
-                self.reset()
-                return
-            self.pos = len(self.imagesList) - 1
-        if lastPosDel:
-            self.currentPic = self.previousPic
-            self.currentPicScaled = self.previousPicScaled
-            fileName = self.current_image_complete_path_pos(self.pos - 1)
-            self.previousPic = QtGui.QPixmap(fileName)
-            self.previousPicScaled = self.previousPic.scaled(
-                viewportSize, QtCore.Qt.KeepAspectRatio)
-            self.nextPic = QtGui.QPixmap()
+        del self.imagesList[self.pos]
+        
+        if len(self.imagesList) == 0:
+            self.reset()
+            return
+
+        if self.pos >= len(self.imagesList):
+            self.previous_image(viewportSize)
         else:
-            self.currentPic = self.previousPic
-            self.currentPicScaled = self.previousPicScaled
             self.pos -= 1
+            pi = QtGui.QPixmap(self.previousPic)
+            pis = QtGui.QPixmap(self.previousPicScaled)
             self.next_image(viewportSize)
+            self.previousPic = pi
+            self.previousPicScaled = pis
