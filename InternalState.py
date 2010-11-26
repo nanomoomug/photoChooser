@@ -18,7 +18,7 @@ import os
 
 from PyQt4 import QtGui, QtCore
 
-from ImageLoader import ImageLoader
+from ImageLoader import ImageLoader, scale_image
 from InternalException import InternalException
 
 __author__ = "Fernando Sanchez Villaamil"
@@ -143,15 +143,20 @@ class InternalState:
 
     def rescale_images(self, viewportSize):
         self.recentlyRescaled = True
+        def rescale(pos, image):
+            path = self.current_image_complete_path_pos(pos)
+            if path in self.transformations:
+                return scale_image(image, path, viewportSize,
+                                   self.transformations[path])
+            else:
+                return scale_image(image, path, viewportSize)
+        
         if not self.currentPic.isNull():
-            self.currentPicScaled = self.currentPic.scaled(
-                viewportSize, QtCore.Qt.KeepAspectRatio)
-        if not self.previousPic.isNull():
-            self.previousPicScaled = self.previousPic.scaled(
-                viewportSize, QtCore.Qt.KeepAspectRatio)
-        if not self.nextPic.isNull():
-            self.nextPicScaled = self.nextPic.scaled(
-                viewportSize, QtCore.Qt.KeepAspectRatio)
+            self.currentPicScaled = rescale(self.pos, self.currentPic)
+        if not self.previousPic.isNull() and self.pos > 0:
+            self.previousPicScaled = rescale(self.pos - 1, self.previousPic)
+        if not self.nextPic.isNull() and self.pos < len(self.imagesList) - 1:
+            self.nextPicScaled = rescale(self.pos + 1, self.nextPic)
 
     def current_image_complete_path(self):
          return self.current_image_complete_path_pos(self.pos)
@@ -169,7 +174,6 @@ class InternalState:
     def current_image_name(self):
         (_,n) = self.imagesList[self.pos]
         return n
-
     
     def get_images_list(self, dir):
         # I got this list from the Qt documentation.

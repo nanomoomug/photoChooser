@@ -30,9 +30,11 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-def scale_image(toScale, filename, maximumViewportSize, matrix):
+def scale_image(toScale, filename, maximumViewportSize, matrix=QtGui.QMatrix()):
+    
     metadata = pyexiv2.metadata.ImageMetadata(str(filename))
     metadata.read()
+    
     if 'Exif.Image.Orientation' in metadata.exif_keys:
         orientation = metadata['Exif.Image.Orientation'].raw_value
         orientation = int(orientation)
