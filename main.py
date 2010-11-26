@@ -88,7 +88,7 @@ def discard_image():
                                 'to could not be created.')
     shutil.move(internalState.current_image_complete_path(),
                 cd + '/discarded/' + internalState.current_image_name())
-    internalState.remove_current_image(scrollArea.maximumViewportSize())
+    internalState.discard_current_image(scrollArea.maximumViewportSize())
     if internalState.image_available():
         show_image()
     else:

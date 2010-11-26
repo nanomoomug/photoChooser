@@ -198,7 +198,7 @@ class InternalState:
                                 viewportSize)
         self.movingForward = True
 
-    def remove_current_image(self, viewportSize):
+    def discard_current_image(self, viewportSize):
         del self.imagesList[self.pos]
         
         if len(self.imagesList) == 0:
