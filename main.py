@@ -31,47 +31,6 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-### Load the main window object created with QtDesigner.
-app = QtGui.QApplication(sys.argv)
-mainWindow = uic.loadUi('./qt/mainWindow.ui')
-
-### Get all the different parts of the gui that we need.
-# This is done like this in case we change the strucuture
-# in QtDesigner.
-actionChoose = mainWindow.actionChoose
-actionQuit = mainWindow.actionQuit
-actionFit = mainWindow.action_Fit_to_Window
-actionZoomIn = mainWindow.actionZoom_In
-actionZoomOut = mainWindow.actionZoom_Out
-actionRotateRight = mainWindow.action_Rotate_Right
-actionRotateLeft = mainWindow.action_Rotate_Left
-scrollArea = mainWindow.scrollArea
-imageArea = mainWindow.imageLabel
-statusBar = mainWindow.statusBar()
-statusBarLabel = QtGui.QLabel('')
-statusBar.addWidget(statusBarLabel)
-
-
-# Change the resize event so that the preloaded images are
-# resized.
-originalResizeEvent = scrollArea.resizeEvent
-def f(event):
-    originalResizeEvent(event)
-    viewportSize = scrollArea.maximumViewportSize()
-    internalState.rescale_images(viewportSize)
-scrollArea.resizeEvent = f
-
-# TODO: Find a nice icon that I'm allowed to use.
-# mainWindow.setWindowIcon(QtGui.QIcon('./img/camera.jpg'))
-
-
-
-# A global dialog to select files.
-fileDialog = QtGui.QFileDialog(mainWindow)
-fileDialog.setFileMode(QtGui.QFileDialog.Directory)
-listView = fileDialog.findChild(QtGui.QListView,'listView')
-listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
-
 ### Define some function that make up the functionality of the program.
 def show_image():
     if not internalState.image_available():
@@ -171,26 +130,79 @@ def choose_images_to_keep():
     internalState.start(res, scrollArea.maximumViewportSize())
     show_next_image()
 
-# Here signal-slot connections are added manually.
-actionChoose.connect(actionChoose, QtCore.SIGNAL('triggered()'),
-                     choose_images_to_keep)
-actionQuit.connect(actionQuit, QtCore.SIGNAL('triggered()'),
-                   QtGui.qApp, QtCore.SLOT('quit()'))
-actionFit.connect(actionFit, QtCore.SIGNAL('triggered()'), fit_image)
-actionZoomIn.connect(actionZoomIn, QtCore.SIGNAL('triggered()'), zoom_in)
-actionZoomOut.connect(actionZoomOut, QtCore.SIGNAL('triggered()'), zoom_out)
-actionRotateRight.connect(actionRotateRight, QtCore.SIGNAL('triggered()'),
-                          rotate_image_right)
-actionRotateLeft.connect(actionRotateLeft, QtCore.SIGNAL('triggered()'),
-                         rotate_image_left)
-nextImage = QtGui.QShortcut('N',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_next_image)
-nextImage = QtGui.QShortcut('B',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_previous_image)
-nextImage = QtGui.QShortcut('D',mainWindow)
-nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
-
 if __name__ == '__main__':
+    global actionChoose
+    global actionQuit
+    global actionFit
+    global actionZoomIn
+    global actionZoomOut
+    global actionRotateRight
+    global actionRotateLeft
+    global scrollArea
+    global imageArea
+    global statusBar
+    global statusBarLabel
+    global fileDialog
+    global listView
+
+    ### Load the main window object created with QtDesigner.
+    app = QtGui.QApplication(sys.argv)
+    mainWindow = uic.loadUi('./qt/mainWindow.ui')
+
+    # A global dialog to select files.
+    fileDialog = QtGui.QFileDialog(mainWindow)
+    fileDialog.setFileMode(QtGui.QFileDialog.Directory)
+    listView = fileDialog.findChild(QtGui.QListView,'listView')
+    listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+
+    ### Get all the different parts of the gui that we need.
+    # This is done like this in case we change the strucuture
+    # in QtDesigner.
+    actionChoose = mainWindow.actionChoose
+    actionQuit = mainWindow.actionQuit
+    actionFit = mainWindow.action_Fit_to_Window
+    actionZoomIn = mainWindow.actionZoom_In
+    actionZoomOut = mainWindow.actionZoom_Out
+    actionRotateRight = mainWindow.action_Rotate_Right
+    actionRotateLeft = mainWindow.action_Rotate_Left
+    scrollArea = mainWindow.scrollArea
+    imageArea = mainWindow.imageLabel
+    statusBar = mainWindow.statusBar()
+    statusBarLabel = QtGui.QLabel('')
+    statusBar.addWidget(statusBarLabel)
+
+    # Change the resize event so that the preloaded images are
+    # resized.
+    originalResizeEvent = scrollArea.resizeEvent
+    def f(event):
+        originalResizeEvent(event)
+        viewportSize = scrollArea.maximumViewportSize()
+        internalState.rescale_images(viewportSize)
+    scrollArea.resizeEvent = f
+
+    # TODO: Find a nice icon that I'm allowed to use.
+    # mainWindow.setWindowIcon(QtGui.QIcon('./img/camera.jpg'))
+
+    # Here signal-slot connections are added manually.
+    actionChoose.connect(actionChoose, QtCore.SIGNAL('triggered()'),
+                         choose_images_to_keep)
+    actionQuit.connect(actionQuit, QtCore.SIGNAL('triggered()'),
+                       QtGui.qApp, QtCore.SLOT('quit()'))
+    actionFit.connect(actionFit, QtCore.SIGNAL('triggered()'), fit_image)
+    actionZoomIn.connect(actionZoomIn, QtCore.SIGNAL('triggered()'), zoom_in)
+    actionZoomOut.connect(actionZoomOut, QtCore.SIGNAL('triggered()'), zoom_out)
+    actionRotateRight.connect(actionRotateRight, QtCore.SIGNAL('triggered()'),
+                              rotate_image_right)
+    actionRotateLeft.connect(actionRotateLeft, QtCore.SIGNAL('triggered()'),
+                             rotate_image_left)
+    nextImage = QtGui.QShortcut('N',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_next_image)
+    nextImage = QtGui.QShortcut('B',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'),
+                      show_previous_image)
+    nextImage = QtGui.QShortcut('D',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
+    
     internalState = InternalState()
     clear() #Put the program in its beginning state.
     mainWindow.show()
