@@ -210,17 +210,14 @@ class InternalState:
         else:
             self.pos -= 1
             if self.movingForward:
-                pi = QtGui.QPixmap(self.previousPic)
-                pis = QtGui.QPixmap(self.previousPicScaled)
-                self.next_image(viewportSize)
-                self.previousPic = pi
-                self.previousPicScaled = pis
+                previousPic = QtGui.QPixmap(self.previousPic)
+                previousPicScaled = QtGui.QPixmap(self.previousPicScaled)
             else:
-                self.next_image(viewportSize)
                 self.loader.join()
-                self.nextPic = QtGui.QPixmap.fromImage(self.loader.image)
-                self.nextPicScaled = QtGui.QPixmap.fromImage(self.loader.
-                                                                imageScaled)
-                path = self.current_image_complete_path_pos(self.pos - 1)
-                self.start_next_loader(path, viewportSize)
-                self.movingForward = False
+                previousPic = QtGui.QPixmap.fromImage(self.loader.image)
+                previousPicScaled = QtGui.QPixmap.fromImage(self.loader.
+                                                            imageScaled)
+            self.next_image(viewportSize)
+            self.previousPic = previousPic
+            self.previousPicScaled = previousPicScaled
+
