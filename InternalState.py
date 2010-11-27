@@ -194,9 +194,7 @@ class InternalState:
             rescale(self.previousPic, self.pos - 1)
             
         if self.currentPic is not None:
-            path = self.current_image_complete_path_pos(self.pos)
-            self.currentPic.rescale(path, viewportSize)
-            #rescale(self.currentPic, self.pos)
+            rescale(self.currentPic, self.pos)
             
         if self.nextPic is not None  and self.pos < len(self.imagesList) - 1:
             rescale(self.nextPic, self.pos + 1)
