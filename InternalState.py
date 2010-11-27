@@ -63,6 +63,7 @@ class PreFetcher():
             self.imageScaled = scale_image(self.image, self.rescalePath,
                                            self.rescaleViewportSize,
                                            self.rescaleMatrix)
+            self.toRescale = False
         
         return (self.image, self.imageScaled)
 
