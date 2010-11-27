@@ -33,24 +33,48 @@ __status__ = "Just for fun!"
 alreadyInstantiated = False
 
 class PreFetcher():
-    __init__(self, filename, viewportSize):
-        self.loader = ImageLoader(filename, viewportSize)
-        self.fromLoader = True
+    def __init__(self, filename_image, viewportSize_imageScaled,
+                 matrix=QtGui.QMatrix()):
 
-    __init__(self, image, imageScaled):
-        self.image = image
-        self.imageScaled = imageScaled
-        self.fromLoader = False
+        if isinstance(filename_image, QtGui.QPixmap) \
+                 and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
+            self.image = filename_image
+            self.imageScaled = viewportSize_imageScaled
+            self.fromLoader = False
+            self.rescale = False
+        elif isinstance(filename_image, QtCore.QString) \
+               and isinstance(viewportSize_imageScaled, QtCore.QSize):
+            self.loader = ImageLoader(filename_image, viewportSize_imageScaled,
+                                      matrix)
+            self.loader.start()
+            self.fromLoader = True
+            self.rescale = False
+        else:
+            raise InternalException('Incorrect PreFetcher contructor.')
 
-    def getImages():
+    def getImages(self):
         if self.fromLoader:
             self.loader.join()
-            pic = QtGui.QPixmap.fromImage(self.loader.image)
-            picScaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
-        else:
-            pic = self.image
-            picScaled = self.imageScaled
-        return (pic, picScaled)
+            self.image = QtGui.QPixmap.fromImage(self.loader.image)
+            self.imageScaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
+            self.fromLoader = False
+
+        if self.rescale:
+            self.imageScaled = scale_image(self.image, self.rescalePath,
+                                           self.rescaleViewportSize,
+                                           self.rescaleMatrix)
+        
+        return (self.image, self.imageScaled)
+
+    def rescale(self, path, viewportSize, matrix=QtGui.QMatrix()):
+        self.rescale = True
+        self.rescalePath = path
+        self.rescaleViewportSize = viewportSize
+        self.rescaleMatrix = matrix
+
+    def set_scaled_image(self, newImage):
+        if not self.fromLoader:
+            self.imageScaled = newImage
             
 
 class InternalState:
@@ -71,12 +95,11 @@ class InternalState:
         self.movingForward = True
         self.recentlyRescaled = False
 
-        self.previousPic = QtGui.QPixmap()
-        self.previousPicScaled = QtGui.QPixmap()
-        self.currentPic = QtGui.QPixmap()
-        self.currentPicScaled = QtGui.QPixmap()
-        self.nextPic = QtGui.QPixmap()
-        self.nextPicScaled = QtGui.QPixmap()
+        # These should later become pre-fetchers
+        self.previousPic = None
+        self.currentPic = None
+        self.nextPic = None
+
     
     def is_at_last_position(self):
         return self.pos == len(self.imagesList) - 1
@@ -90,95 +113,92 @@ class InternalState:
     def get_total_number_images(self):
         return len(self.imagesList)
 
-    def start_next_loader(self, path, viewportSize):
+    def make_path_fetcher(self, path, viewportSize):
         if path in self.transformations:
-            self.loader = ImageLoader(path, viewportSize,
-                                      self.transformations[path])
+            return PreFetcher(path, viewportSize, self.transformations[path])
         else:
-            self.loader = ImageLoader(path, viewportSize)
-        self.loader.start()
+            return PreFetcher(path, viewportSize)
 
     def next_image(self, viewportSize):
         self.pos += 1
+        
         if (self.pos >= len(self.imagesList)):
             self.pos = len(self.imagesList) - 1
             return
-        self.previousPic = self.currentPic
-        self.previousPicScaled = self.currentPicScaled
-        if self.movingForward:
-            self.loader.join()
-            self.currentPic = QtGui.QPixmap.fromImage(self.loader.image)
-            self.currentPicScaled = QtGui.QPixmap.fromImage(self.loader.
-                                                            imageScaled)
-            if self.recentlyRescaled:
-                self.recentlyRescaled = False
-                self.currentPicScaled = self.currentPic.scaled(
-                    viewportSize, QtCore.Qt.KeepAspectRatio)
-        else:
-            self.currentPic = self.nextPic
-            self.currentPicScaled = self.nextPicScaled
-        if (self.pos < len(self.imagesList) - 1):
-            path = self.current_image_complete_path_pos(self.pos + 1)
-            self.start_next_loader(path, viewportSize)
-        self.movingForward = True
 
+        self.previousPic = self.currentPic
+
+        self.currentPic = self.nextPic
+        if self.recentlyRescaled:
+            self.recentlyRescaled = False
+            self.currentPicScaled = self.currentPic.scaled(
+                viewportSize, QtCore.Qt.KeepAspectRatio)
+
+        if self.pos < len(self.imagesList) - 1:
+            path = self.current_image_complete_path_pos(self.pos + 1)
+            self.nextPic = self.make_path_fetcher(path, viewportSize)
+        
     def previous_image(self, viewportSize):
         self.pos -= 1
+        
         if (self.pos < 0):
             self.pos = 0
             return
-        self.nextPic = self.currentPic
-        self.nextPicScaled = self.currentPicScaled
-        if not self.movingForward:
-            self.loader.join()
-            self.currentPic = QtGui.QPixmap.fromImage(self.loader.image)
-            self.currentPicScaled = QtGui.QPixmap.fromImage(self.loader.
-                                                            imageScaled)
-            if self.recentlyRescaled:
-                self.recentlyRescaled = False
-                self.currentPicScaled = self.currentPic.scaled(
-                    viewportSize, QtCore.Qt.KeepAspectRatio)
-        else:
-            self.currentPic = self.previousPic
-            self.currentPicScaled = self.previousPicScaled
-        if (self.pos > 0):
-            path = self.current_image_complete_path_pos(self.pos - 1)
-            self.start_next_loader(path, viewportSize)
-        self.movingForward = False
 
+        self.nextPic = self.currentPic
+
+        self.currentPic = self.previousPic
+        if self.recentlyRescaled:
+            self.recentlyRescaled = False
+            self.currentPicScaled = self.currentPic.scaled(
+                viewportSize, QtCore.Qt.KeepAspectRatio)
+
+        if self.pos > 0:
+            path = self.current_image_complete_path_pos(self.pos - 1)
+            self.previousPic = self.make_path_fetcher(path, viewportSize)
+        
     def image_available(self):
         return not len(self.imagesList) == 0
 
     def current_image(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
-        return self.currentPic
+        
+        (res,_) = self.currentPic.getImages()
+        return res
 
     def current_image_scaled(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
-        return self.currentPicScaled
+
+        (_,res) = self.currentPic.getImages()
+        return res
 
     def set_scaled_image(self, newImage):
-        self.currentPicScaled = newImage
+        self.currentPic.set_scaled_image(newImage)
 
     def rescale_images(self, viewportSize):
+        if not self.image_available():
+            return
+        
         self.recentlyRescaled = True
-        def rescale(pos, image):
+
+        def rescale(fetcher, pos):
             path = self.current_image_complete_path_pos(pos)
             if path in self.transformations:
-                return scale_image(image, path, viewportSize,
-                                   self.transformations[path])
+                fetcher.rescale(path, viewportSize, self.transformations[path])
             else:
-                return scale_image(image, path, viewportSize)
-        
-        if not self.currentPic.isNull():
-            self.currentPicScaled = rescale(self.pos, self.currentPic)
-        if not self.previousPic.isNull() and self.pos > 0:
-            self.previousPicScaled = rescale(self.pos - 1, self.previousPic)
-        if not self.nextPic.isNull() and self.pos < len(self.imagesList) - 1:
-            self.nextPicScaled = rescale(self.pos + 1, self.nextPic)
+                fetcher.rescale(path, viewportSize)
 
+        if self.previousPic is not None and self.pos > 0:
+            rescale(self.previousPic, pos - 1)
+            
+        if self.currentPic is not None:
+            rescale(self.currentPic, self.pos)
+            
+        if self.nextPic is not None  and self.pos < len(self.imagesList) - 1:
+            rescale(self.nextPic, self.pos + 1)
+        
     def current_image_complete_path(self):
          return self.current_image_complete_path_pos(self.pos)
 
@@ -212,12 +232,17 @@ class InternalState:
         for f in dirList:
             if os.path.isdir(f):
                 self.imagesList.extend(self.get_images_list(f))
+                
         self.pos = -1
+        
         if len(self.imagesList) == 0:
             return
-        self.start_next_loader(self.current_image_complete_path_pos(0),
-                                viewportSize)
-        self.movingForward = True
+
+        # currentPic being invalid can only cause problems...
+        self.currentPic = PreFetcher(QtGui.QPixmap(), QtGui.QPixmap())
+
+        path = self.current_image_complete_path_pos(0)
+        self.nextPic = self.make_path_fetcher(path, viewportSize)
 
     def discard_current_image(self, viewportSize):
         del self.imagesList[self.pos]
