@@ -32,6 +32,27 @@ __status__ = "Just for fun!"
 
 alreadyInstantiated = False
 
+class PreFetcher():
+    __init__(self, filename, viewportSize):
+        self.loader = ImageLoader(filename, viewportSize)
+        self.fromLoader = True
+
+    __init__(self, image, imageScaled):
+        self.image = image
+        self.imageScaled = imageScaled
+        self.fromLoader = False
+
+    def getImages():
+        if self.fromLoader:
+            self.loader.join()
+            pic = QtGui.QPixmap.fromImage(self.loader.image)
+            picScaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
+        else:
+            pic = self.image
+            picScaled = self.imageScaled
+        return (pic, picScaled)
+            
+
 class InternalState:
     def __init__(self):
         global alreadyInstantiated
