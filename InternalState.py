@@ -255,16 +255,9 @@ class InternalState:
         if self.pos >= len(self.imagesList):
             self.previous_image(viewportSize)
         else:
-            self.pos -= 1
-            if self.movingForward:
-                previousPic = QtGui.QPixmap(self.previousPic)
-                previousPicScaled = QtGui.QPixmap(self.previousPicScaled)
-            else:
-                self.loader.join()
-                previousPic = QtGui.QPixmap.fromImage(self.loader.image)
-                previousPicScaled = QtGui.QPixmap.fromImage(self.loader.
-                                                            imageScaled)
-            self.next_image(viewportSize)
-            self.previousPic = previousPic
-            self.previousPicScaled = previousPicScaled
+            self.currentPic = self.nextPic
+            if self.pos < len(self.imagesList) - 1:
+                path = self.current_image_complete_path_pos(self.pos + 1)
+                self.nextPic = self.make_path_fetcher(path, viewportSize)
+            
 
