@@ -100,20 +100,9 @@ def clear():
     imageArea.setText('No images loaded...')
 
 def rotate_image(degrees):
-    name = internalState.current_image_complete_path()
-    if name in internalState.transformations:
-        matrix = internalState.transformations[name]
-    else:
-        matrix = QtGui.QMatrix()
-    matrix.rotate(degrees)
-    pix = internalState.current_image()
-    transformed = pix.transformed(matrix).scaled(
-        scrollArea.maximumViewportSize(),
-        QtCore.Qt.KeepAspectRatio)
-    imageArea.setPixmap(transformed)
-
-    internalState.set_scaled_image(transformed)
-    internalState.transformations[name] = matrix
+    internalState.rotate_current_image(degrees,
+                                       scrollArea.maximumViewportSize())
+    show_image()
 
 def rotate_image_right():
     rotate_image(90)

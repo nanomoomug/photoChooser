@@ -280,7 +280,7 @@ class InternalState:
                 path = self.current_image_complete_path_pos(self.pos + 1)
                 self.nextPic = self.make_path_fetcher(path, viewportSize)
 
-    def rotate_current_image(self, degrees):
+    def rotate_current_image(self, degrees, viewportSize):
         name = self.current_image_complete_path()
         if name in self.transformations:
             matrix = self.transformations[name]
