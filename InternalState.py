@@ -96,6 +96,9 @@ class InternalState:
         self.movingForward = True
         self.recentlyRescaled = False
 
+        self.history = []
+        self.forwardHistory = []
+
         # These should later become pre-fetchers
         self.previousPic = None
         self.currentPic = None
@@ -157,6 +160,20 @@ class InternalState:
         if self.pos > 0:
             path = self.current_image_complete_path_pos(self.pos - 1)
             self.previousPic = self.make_path_fetcher(path, viewportSize)
+
+    def jump_to_image(newPos, viewportSize):
+        if newPos + 1 == self.pos:
+            self.previous_image(viewportSize)
+        elif newPos - 1 == self.pos:
+            self.next_image(viewportSize)
+        else:
+            self.pos = newPos
+            path = self.current_image_complete_path_pos(self.pos - 1)
+            self.previousPic = self.make_path_fetcher(path, viewportSize)
+            path = self.current_image_complete_path_pos(self.pos)
+            self.currentPic = self.make_path_fetcher(path, viewportSize)
+            path = self.current_image_complete_path_pos(self.pos + 1)
+            self.nextPic = self.make_path_fetcher(path, viewportSize)
         
     def image_available(self):
         return not len(self.imagesList) == 0
