@@ -161,21 +161,18 @@ class InternalState:
             path = self.current_image_complete_path_pos(self.pos - 1)
             self.previousPic = self.make_path_fetcher(path, viewportSize)
 
-    def jump_to_image(newPos, viewportSize):
-        if newPos + 1 == self.pos:
-            self.pos = newPos
-            self.previous_image(viewportSize)
-        elif newPos - 1 == self.pos:
-            self.pos = newPos
-            self.next_image(viewportSize)
-        else:
-            self.pos = newPos
-            path = self.current_image_complete_path_pos(self.pos - 1)
-            self.previousPic = self.make_path_fetcher(path, viewportSize)
-            path = self.current_image_complete_path_pos(self.pos)
-            self.currentPic = self.make_path_fetcher(path, viewportSize)
-            path = self.current_image_complete_path_pos(self.pos + 1)
-            self.nextPic = self.make_path_fetcher(path, viewportSize)
+    def add_image(self, path, pos, viewportSize):
+        self.imagesList.insert(pos, path)
+        self.jump_to_image(pos, viewportSize)
+
+    def jump_to_image(self, newPos, viewportSize):
+        self.pos = newPos
+        path = self.current_image_complete_path_pos(self.pos - 1)
+        self.previousPic = self.make_path_fetcher(path, viewportSize)
+        path = self.current_image_complete_path_pos(self.pos)
+        self.currentPic = self.make_path_fetcher(path, viewportSize)
+        path = self.current_image_complete_path_pos(self.pos + 1)
+        self.nextPic = self.make_path_fetcher(path, viewportSize)
         
     def image_available(self):
         return not len(self.imagesList) == 0
@@ -293,7 +290,34 @@ class InternalState:
 
         self.set_scaled_image(transformed)
         self.transformations[name] = matrix
-            
+
+    def add_to_history(self, action):
+        self.history.insert(0, action)
+
+    def add_to_forward_history(self, action):
+        self.forwardHistory.insert(0, action)
+
+    def clear_forward_history(self):
+        self.forwardHistory = []
+
+    def undo(self, viewportSize):
+        if len(self.history[0]) == 0:
+            return
+        
+        action = self.history[0]
+        del self.history[0]
+        action.undo(viewportSize)
+        self.add_to_forward_history(action)
+
+    def redo(self, viewportSize):
+        if len(self.forwardHistory[0]) == 0:
+            return
+
+        action = self.forwardHistory[0]
+        del self.forwardHistory[0]
+        action.redo(viewportSize)
+        self.add_to_history(action)
+        
 
 class DeletionAction():
 
@@ -303,7 +327,7 @@ class DeletionAction():
         self.pos = pos
 
     def undo(self, viewportSize):
-        self.internalState.add_image(deleted, pos)
+        self.internalState.add_image(deleted, pos, viewportSize)
 
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos

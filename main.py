@@ -20,7 +20,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4 import uic
 
 from InternalException import InternalException
-from InternalState import InternalState
+from InternalState import *
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
