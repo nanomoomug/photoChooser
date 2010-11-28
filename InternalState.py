@@ -309,40 +309,35 @@ class DeletionAction():
         assert self.internalState.pos == self.pos
         self.internalState.discard_current_image(viewportSize)
 
-class RotationActions():
+class RotationAction():
     
-    def __init__(self, internalState, degree, pos):
+    def __init__(self, internalState, degrees, pos):
         self.internalState = internalState
-        self.degree = degree
+        self.degrees = degrees
         self.pos = pos
 
     def undo(self, viewportSize):
         self.oldPos = self.internalState.pos
         self.jump_to_image(self.pos)
-        name = self.internalState.current_image_complete_path()
-        if name in self.internalState.transformations:
-            matrix = self.internalState.transformations[name]
-        else:
-            matrix = QtGui.QMatrix()
-        matrix.rotate(-self.degrees)
-        pix = self.internalState.current_image()
-        transformed = pix.transformed(matrix).scaled(viewportSize,
-                                                     QtCore.Qt.KeepAspectRatio)
-
-        internalState.set_scaled_image(transformed)
-        internalState.transformations[name] = matrix
+        self.rotate_current_image(-self.degrees, viewportSize)
 
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
-        name = self.internalState.current_image_complete_path()
-        if name in self.internalState.transformations:
-            matrix = self.internalState.transformations[name]
-        else:
-            matrix = QtGui.QMatrix()
-        matrix.rotate(self.degrees)
-        pix = self.internalState.current_image()
-        transformed = pix.transformed(matrix).scaled(viewportSize,
-                                                     QtCore.Qt.KeepAspectRatio)
+        self.rotate_current_image(-self.degrees, viewportSize)
+        jumpAction = JumpActions(self.internalState, self.pos)
+        jumpAction.oldPos = self.oldPos
+        self.add_to_forward_history(jumpAction)
 
-        internalState.set_scaled_image(transformed)
-        internalState.transformations[name] = matrix
+class JumpAction():
+
+    def __init__(self, internalState, pos):
+        self.internalState = internalState
+        self.pos = pos
+
+    def undo(self, viewportSize):
+        self.oldPos = self.internalState.pos
+        self.jump_to_image(self.pos)
+
+    def redo(self, viewportSize):
+        assert self.internalState.pos == self.pos
+        self.jump_to_image(self.oldPos)
