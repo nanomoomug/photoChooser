@@ -163,8 +163,10 @@ class InternalState:
 
     def jump_to_image(newPos, viewportSize):
         if newPos + 1 == self.pos:
+            self.pos = newPos
             self.previous_image(viewportSize)
         elif newPos - 1 == self.pos:
+            self.pos = newPos
             self.next_image(viewportSize)
         else:
             self.pos = newPos
@@ -277,5 +279,70 @@ class InternalState:
             if self.pos < len(self.imagesList) - 1:
                 path = self.current_image_complete_path_pos(self.pos + 1)
                 self.nextPic = self.make_path_fetcher(path, viewportSize)
+
+    def rotate_current_image(self, degrees):
+        name = self.current_image_complete_path()
+        if name in self.transformations:
+            matrix = self.transformations[name]
+        else:
+            matrix = QtGui.QMatrix()
+        matrix.rotate(degrees)
+        pix = self.current_image()
+        transformed = pix.transformed(matrix).scaled(viewportSize,
+                                                     QtCore.Qt.KeepAspectRatio)
+
+        self.set_scaled_image(transformed)
+        self.transformations[name] = matrix
             
 
+class DeletionAction():
+
+    def __init__(self, internalState, deleted, pos):
+        self.internalState = internalState
+        self.deleted = deleted
+        self.pos = pos
+
+    def undo(self, viewportSize):
+        self.internalState.add_image(deleted, pos)
+
+    def redo(self, viewportSize):
+        assert self.internalState.pos == self.pos
+        self.internalState.discard_current_image(viewportSize)
+
+class RotationActions():
+    
+    def __init__(self, internalState, degree, pos):
+        self.internalState = internalState
+        self.degree = degree
+        self.pos = pos
+
+    def undo(self, viewportSize):
+        self.oldPos = self.internalState.pos
+        self.jump_to_image(self.pos)
+        name = self.internalState.current_image_complete_path()
+        if name in self.internalState.transformations:
+            matrix = self.internalState.transformations[name]
+        else:
+            matrix = QtGui.QMatrix()
+        matrix.rotate(-self.degrees)
+        pix = self.internalState.current_image()
+        transformed = pix.transformed(matrix).scaled(viewportSize,
+                                                     QtCore.Qt.KeepAspectRatio)
+
+        internalState.set_scaled_image(transformed)
+        internalState.transformations[name] = matrix
+
+    def redo(self, viewportSize):
+        assert self.internalState.pos == self.pos
+        name = self.internalState.current_image_complete_path()
+        if name in self.internalState.transformations:
+            matrix = self.internalState.transformations[name]
+        else:
+            matrix = QtGui.QMatrix()
+        matrix.rotate(self.degrees)
+        pix = self.internalState.current_image()
+        transformed = pix.transformed(matrix).scaled(viewportSize,
+                                                     QtCore.Qt.KeepAspectRatio)
+
+        internalState.set_scaled_image(transformed)
+        internalState.transformations[name] = matrix
