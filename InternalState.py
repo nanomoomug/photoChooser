@@ -161,8 +161,8 @@ class InternalState:
             path = self.current_image_complete_path_pos(self.pos - 1)
             self.previousPic = self.make_path_fetcher(path, viewportSize)
 
-    def add_image(self, path, pos, viewportSize):
-        self.imagesList.insert(pos, path)
+    def add_image(self, path, filename, pos, viewportSize):
+        self.imagesList.insert(pos, (path,filename))
         self.jump_to_image(pos, viewportSize)
 
     def jump_to_image(self, newPos, viewportSize):

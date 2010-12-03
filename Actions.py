@@ -1,4 +1,6 @@
 
+import shutil
+
 import InternalState
 
 __author__ = "Fernando Sanchez Villaamil"
@@ -12,17 +14,24 @@ __status__ = "Just for fun!"
 
 class DeletionAction():
 
-    def __init__(self, internalState, deleted, pos):
+    def __init__(self, internalState, path, filename, pos):
         self.internalState = internalState
-        self.deleted = deleted
+        self.path = path
+        self.filename = filename
         self.pos = pos
 
     def undo(self, viewportSize):
-        self.internalState.add_image(deleted, pos, viewportSize)
+        shutil.move(self.path + '/discarded/' + self.filename,
+                    self.path + '/' + self.filename)
+        self.internalState.add_image(self.path, self.filename,
+                                     self.pos, viewportSize)
+        self.internalState.jump_to_image(self.pos, viewportSize)
 
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
         self.internalState.discard_current_image(viewportSize)
+        shutil.move(self.path + '/discarded/' + self.filename,
+                    self.path + '/' + self.filename)
 
 class RotationAction():
     
@@ -39,9 +48,11 @@ class RotationAction():
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
         self.internalState.rotate_current_image(self.degrees, viewportSize)
-        jumpAction = JumpAction(self.internalState, self.pos)
-        jumpAction.oldPos = self.oldPos
-        self.internalState.add_to_forward_history(jumpAction)
+        
+        if self.oldPos != self.internalState.pos:
+            jumpAction = JumpAction(self.internalState, self.pos)
+            jumpAction.oldPos = self.oldPos
+            self.internalState.add_to_forward_history(jumpAction)
 
 class JumpAction():
 

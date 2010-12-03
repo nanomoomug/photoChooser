@@ -34,6 +34,7 @@ __status__ = "Just for fun!"
 
 # Configuration variables, these should later be read from a config file
 rotationInHistory = True
+discardingInHistory = True
 
 ### Define some function that make up the functionality of the program.
 def show_image():
@@ -90,9 +91,16 @@ def discard_image():
         raise InternalException('A file named discarded was found. ' +
                                 'A folder of that name to move the photos' +
                                 'to could not be created.')
+    filename = internalState.current_image_name()
     shutil.move(internalState.current_image_complete_path(),
-                cd + '/discarded/' + internalState.current_image_name())
+                cd + '/discarded/' + filename)
     internalState.discard_current_image(scrollArea.maximumViewportSize())
+
+    if discardingInHistory:
+        action = Actions.DeletionAction(internalState, cd, filename,
+                                        internalState.pos)
+        internalState.add_to_history(action)
+    
     if internalState.image_available():
         show_image()
     else:
@@ -108,7 +116,8 @@ def rotate_image(degrees):
                                        scrollArea.maximumViewportSize())
     show_image()
     if rotationInHistory:
-        action = Actions.RotationAction(internalState, degrees, internalState.pos)
+        action = Actions.RotationAction(internalState, degrees,
+                                        internalState.pos)
         internalState.add_to_history(action)
 
 
