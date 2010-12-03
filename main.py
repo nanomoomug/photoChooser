@@ -21,6 +21,7 @@ from PyQt4 import uic
 
 from InternalException import InternalException
 from InternalState import InternalState
+import Actions
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -30,6 +31,10 @@ __version__ = "1.0beta"
 __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
+
+# Configuration variables, these should later be read from a config file
+rotationInHistory = True
+discardingInHistory = True
 
 ### Define some function that make up the functionality of the program.
 def show_image():
@@ -86,9 +91,16 @@ def discard_image():
         raise InternalException('A file named discarded was found. ' +
                                 'A folder of that name to move the photos' +
                                 'to could not be created.')
+    filename = internalState.current_image_name()
+    position = internalState.pos
     shutil.move(internalState.current_image_complete_path(),
-                cd + '/discarded/' + internalState.current_image_name())
+                cd + '/discarded/' + filename)
     internalState.discard_current_image(scrollArea.maximumViewportSize())
+
+    if discardingInHistory:
+        action = Actions.DeletionAction(internalState, cd, filename, position)
+        internalState.add_to_history(action)
+    
     if internalState.image_available():
         show_image()
     else:
@@ -100,20 +112,15 @@ def clear():
     imageArea.setText('No images loaded...')
 
 def rotate_image(degrees):
-    name = internalState.current_image_complete_path()
-    if name in internalState.transformations:
-        matrix = internalState.transformations[name]
-    else:
-        matrix = QtGui.QMatrix()
-    matrix.rotate(degrees)
-    pix = internalState.current_image()
-    transformed = pix.transformed(matrix).scaled(
-        scrollArea.maximumViewportSize(),
-        QtCore.Qt.KeepAspectRatio)
-    imageArea.setPixmap(transformed)
+    internalState.rotate_current_image(degrees,
+                                       scrollArea.maximumViewportSize())
+    show_image()
+    if rotationInHistory:
+        action = Actions.RotationAction(internalState, degrees,
+                                        internalState.pos)
+        internalState.add_to_history(action)
 
-    internalState.set_scaled_image(transformed)
-    internalState.transformations[name] = matrix
+
 
 def rotate_image_right():
     rotate_image(90)
@@ -121,7 +128,7 @@ def rotate_image_right():
 def rotate_image_left():
     rotate_image(-90)
 
-# Ask the user to select a direcory and save it in 'internalState.directory'.
+# Ask the user to select a directory and save it in 'internalState.directory'.
 def choose_images_to_keep():
     if not fileDialog.exec_():
         return
@@ -129,6 +136,14 @@ def choose_images_to_keep():
     res = fileDialog.selectedFiles()
     internalState.start(res, scrollArea.maximumViewportSize())
     show_next_image()
+
+def undo():
+    internalState.undo(scrollArea.maximumViewportSize())
+    show_image()
+
+def redo():
+    internalState.redo(scrollArea.maximumViewportSize())
+    show_image()
 
 if __name__ == '__main__':
     global actionChoose
@@ -156,7 +171,7 @@ if __name__ == '__main__':
     listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
 
     ### Get all the different parts of the gui that we need.
-    # This is done like this in case we change the strucuture
+    # This is done like this in case we change the structure
     # in QtDesigner.
     actionChoose = mainWindow.actionChoose
     actionQuit = mainWindow.actionQuit
@@ -202,6 +217,10 @@ if __name__ == '__main__':
                       show_previous_image)
     nextImage = QtGui.QShortcut('D',mainWindow)
     nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
+    nextImage = QtGui.QShortcut('Z',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), undo)
+    nextImage = QtGui.QShortcut('Y',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), redo)
     
     internalState = InternalState()
     clear() #Put the program in its beginning state.
