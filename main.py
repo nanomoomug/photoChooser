@@ -92,13 +92,13 @@ def discard_image():
                                 'A folder of that name to move the photos' +
                                 'to could not be created.')
     filename = internalState.current_image_name()
+    position = internalState.pos
     shutil.move(internalState.current_image_complete_path(),
                 cd + '/discarded/' + filename)
     internalState.discard_current_image(scrollArea.maximumViewportSize())
 
     if discardingInHistory:
-        action = Actions.DeletionAction(internalState, cd, filename,
-                                        internalState.pos)
+        action = Actions.DeletionAction(internalState, cd, filename, position)
         internalState.add_to_history(action)
     
     if internalState.image_available():
