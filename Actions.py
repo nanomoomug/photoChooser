@@ -1,5 +1,5 @@
 
-from InternalState import InternalState
+import InternalState
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -33,15 +33,15 @@ class RotationAction():
 
     def undo(self, viewportSize):
         self.oldPos = self.internalState.pos
-        self.jump_to_image(self.pos)
-        self.rotate_current_image(-self.degrees, viewportSize)
+        self.internalState.jump_to_image(self.pos, viewportSize)
+        self.internalState.rotate_current_image(-self.degrees, viewportSize)
 
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
-        self.rotate_current_image(-self.degrees, viewportSize)
-        jumpAction = JumpActions(self.internalState, self.pos)
+        self.internalState.rotate_current_image(self.degrees, viewportSize)
+        jumpAction = JumpAction(self.internalState, self.pos)
         jumpAction.oldPos = self.oldPos
-        self.add_to_forward_history(jumpAction)
+        self.internalState.add_to_forward_history(jumpAction)
 
 class JumpAction():
 
@@ -51,8 +51,8 @@ class JumpAction():
 
     def undo(self, viewportSize):
         self.oldPos = self.internalState.pos
-        self.jump_to_image(self.pos)
+        self.internalState.jump_to_image(self.pos, viewportSize)
 
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
-        self.jump_to_image(self.oldPos)
+        self.internalState.jump_to_image(self.oldPos, viewportSize)

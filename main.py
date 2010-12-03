@@ -21,7 +21,7 @@ from PyQt4 import uic
 
 from InternalException import InternalException
 from InternalState import InternalState
-from Actions import *
+import Actions
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -31,6 +31,9 @@ __version__ = "1.0beta"
 __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
+
+# Configuration variables, these should later be read from a config file
+rotationInHistory = True
 
 ### Define some function that make up the functionality of the program.
 def show_image():
@@ -104,6 +107,11 @@ def rotate_image(degrees):
     internalState.rotate_current_image(degrees,
                                        scrollArea.maximumViewportSize())
     show_image()
+    if rotationInHistory:
+        action = Actions.RotationAction(internalState, degrees, internalState.pos)
+        internalState.add_to_history(action)
+
+
 
 def rotate_image_right():
     rotate_image(90)
@@ -111,7 +119,7 @@ def rotate_image_right():
 def rotate_image_left():
     rotate_image(-90)
 
-# Ask the user to select a direcory and save it in 'internalState.directory'.
+# Ask the user to select a directory and save it in 'internalState.directory'.
 def choose_images_to_keep():
     if not fileDialog.exec_():
         return
@@ -119,6 +127,14 @@ def choose_images_to_keep():
     res = fileDialog.selectedFiles()
     internalState.start(res, scrollArea.maximumViewportSize())
     show_next_image()
+
+def undo():
+    internalState.undo(scrollArea.maximumViewportSize())
+    show_image()
+
+def redo():
+    internalState.redo(scrollArea.maximumViewportSize())
+    show_image()
 
 if __name__ == '__main__':
     global actionChoose
@@ -146,7 +162,7 @@ if __name__ == '__main__':
     listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
 
     ### Get all the different parts of the gui that we need.
-    # This is done like this in case we change the strucuture
+    # This is done like this in case we change the structure
     # in QtDesigner.
     actionChoose = mainWindow.actionChoose
     actionQuit = mainWindow.actionQuit
@@ -192,6 +208,10 @@ if __name__ == '__main__':
                       show_previous_image)
     nextImage = QtGui.QShortcut('D',mainWindow)
     nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
+    nextImage = QtGui.QShortcut('Z',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), undo)
+    nextImage = QtGui.QShortcut('Y',mainWindow)
+    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), redo)
     
     internalState = InternalState()
     clear() #Put the program in its beginning state.

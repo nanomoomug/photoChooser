@@ -166,13 +166,21 @@ class InternalState:
         self.jump_to_image(pos, viewportSize)
 
     def jump_to_image(self, newPos, viewportSize):
+        if newPos < 0 or newPos >= len(self.imagesList):
+            return
+        
         self.pos = newPos
-        path = self.current_image_complete_path_pos(self.pos - 1)
-        self.previousPic = self.make_path_fetcher(path, viewportSize)
+        
+        if self.pos - 1 >= 0:
+            path = self.current_image_complete_path_pos(self.pos - 1)
+            self.previousPic = self.make_path_fetcher(path, viewportSize)
+            
         path = self.current_image_complete_path_pos(self.pos)
         self.currentPic = self.make_path_fetcher(path, viewportSize)
-        path = self.current_image_complete_path_pos(self.pos + 1)
-        self.nextPic = self.make_path_fetcher(path, viewportSize)
+
+        if self.pos + 1 < len(self.imagesList):
+            path = self.current_image_complete_path_pos(self.pos + 1)
+            self.nextPic = self.make_path_fetcher(path, viewportSize)
         
     def image_available(self):
         return not len(self.imagesList) == 0
@@ -301,16 +309,16 @@ class InternalState:
         self.forwardHistory = []
 
     def undo(self, viewportSize):
-        if len(self.history[0]) == 0:
+        if len(self.history) == 0:
             return
-        
+
         action = self.history[0]
         del self.history[0]
         action.undo(viewportSize)
-        self.add_to_forward_history(action)
+        self.add_to_forward_history(action)        
 
     def redo(self, viewportSize):
-        if len(self.forwardHistory[0]) == 0:
+        if len(self.forwardHistory) == 0:
             return
 
         action = self.forwardHistory[0]
