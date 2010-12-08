@@ -64,7 +64,7 @@ class PreFetcher():
                                            self.rescaleViewportSize,
                                            self.rescaleMatrix)
             self.toRescale = False
-        
+
         return (self.image, self.imageScaled)
 
     def rescale(self, path, viewportSize, matrix=QtGui.QMatrix()):
@@ -76,7 +76,7 @@ class PreFetcher():
     def set_scaled_image(self, newImage):
         if not self.fromLoader:
             self.imageScaled = newImage
-            
+
 
 class InternalState:
     def __init__(self):
@@ -85,7 +85,7 @@ class InternalState:
             raise InternalException('InternalState instantiated more than one '
                                     + 'time. '
                                     + 'It should be treated as a singleton.')
-        else:            
+        else:
             alreadyInstantiated = True
             self.reset()
 
@@ -104,7 +104,7 @@ class InternalState:
         self.currentPic = None
         self.nextPic = None
 
-    
+
     def is_at_last_position(self):
         return self.pos == len(self.imagesList) - 1
 
@@ -125,7 +125,7 @@ class InternalState:
 
     def next_image(self, viewportSize):
         self.pos += 1
-        
+
         if (self.pos >= len(self.imagesList)):
             self.pos = len(self.imagesList) - 1
             return
@@ -141,10 +141,10 @@ class InternalState:
         if self.pos < len(self.imagesList) - 1:
             path = self.current_image_complete_path_pos(self.pos + 1)
             self.nextPic = self.make_path_fetcher(path, viewportSize)
-        
+
     def previous_image(self, viewportSize):
         self.pos -= 1
-        
+
         if (self.pos < 0):
             self.pos = 0
             return
@@ -168,27 +168,27 @@ class InternalState:
     def jump_to_image(self, newPos, viewportSize):
         if newPos < 0 or newPos >= len(self.imagesList):
             return
-        
+
         self.pos = newPos
-        
+
         if self.pos - 1 >= 0:
             path = self.current_image_complete_path_pos(self.pos - 1)
             self.previousPic = self.make_path_fetcher(path, viewportSize)
-            
+
         path = self.current_image_complete_path_pos(self.pos)
         self.currentPic = self.make_path_fetcher(path, viewportSize)
 
         if self.pos + 1 < len(self.imagesList):
             path = self.current_image_complete_path_pos(self.pos + 1)
             self.nextPic = self.make_path_fetcher(path, viewportSize)
-        
+
     def image_available(self):
         return not len(self.imagesList) == 0
 
     def current_image(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
-        
+
         (res,_) = self.currentPic.getImages()
         return res
 
@@ -205,7 +205,7 @@ class InternalState:
     def rescale_images(self, viewportSize):
         if not self.image_available():
             return
-        
+
         self.recentlyRescaled = True
 
         def rescale(fetcher, pos):
@@ -217,13 +217,13 @@ class InternalState:
 
         if self.previousPic is not None and self.pos > 0:
             rescale(self.previousPic, self.pos - 1)
-            
+
         if self.currentPic is not None:
             rescale(self.currentPic, self.pos)
-            
+
         if self.nextPic is not None  and self.pos < len(self.imagesList) - 1:
             rescale(self.nextPic, self.pos + 1)
-        
+
     def current_image_complete_path(self):
          return self.current_image_complete_path_pos(self.pos)
 
@@ -240,7 +240,7 @@ class InternalState:
     def current_image_name(self):
         (_,n) = self.imagesList[self.pos]
         return n
-    
+
     def get_images_list(self, dir):
         # I got this list from the Qt documentation.
         imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
@@ -257,9 +257,9 @@ class InternalState:
         for f in dirList:
             if os.path.isdir(f):
                 self.imagesList.extend(self.get_images_list(f))
-                
+
         self.pos = -1
-        
+
         if len(self.imagesList) == 0:
             return
 
@@ -272,7 +272,7 @@ class InternalState:
 
     def discard_current_image(self, viewportSize):
         del self.imagesList[self.pos]
-        
+
         if len(self.imagesList) == 0:
             self.reset()
             return
@@ -315,7 +315,7 @@ class InternalState:
         action = self.history[0]
         del self.history[0]
         action.undo(viewportSize)
-        self.add_to_forward_history(action)        
+        self.add_to_forward_history(action)
 
     def redo(self, viewportSize):
         if len(self.forwardHistory) == 0:

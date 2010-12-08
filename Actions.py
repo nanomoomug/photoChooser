@@ -13,7 +13,6 @@ __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
 class DeletionAction():
-
     def __init__(self, internalState, path, filename, pos):
         self.internalState = internalState
         self.path = path
@@ -34,7 +33,6 @@ class DeletionAction():
                     self.path + '/' + self.filename)
 
 class RotationAction():
-    
     def __init__(self, internalState, degrees, pos):
         self.internalState = internalState
         self.degrees = degrees
@@ -48,14 +46,13 @@ class RotationAction():
     def redo(self, viewportSize):
         assert self.internalState.pos == self.pos
         self.internalState.rotate_current_image(self.degrees, viewportSize)
-        
+
         if self.oldPos != self.internalState.pos:
             jumpAction = JumpAction(self.internalState, self.pos)
             jumpAction.oldPos = self.oldPos
             self.internalState.add_to_forward_history(jumpAction)
 
 class JumpAction():
-
     def __init__(self, internalState, pos):
         self.internalState = internalState
         self.pos = pos
