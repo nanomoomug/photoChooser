@@ -42,7 +42,8 @@ class PreFetcher():
             self.imageScaled = viewportSize_imageScaled
             self.fromLoader = False
             self.toRescale = False
-        elif isinstance(filename_image, str) \
+        elif (isinstance(filename_image, QtCore.QString) or \
+                 isinstance(filename_image, str)) \
                and isinstance(viewportSize_imageScaled, QtCore.QSize):
             self.loader = ImageLoader(filename_image, viewportSize_imageScaled,
                                       matrix)
