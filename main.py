@@ -144,17 +144,23 @@ def rotate_image_right():
 def rotate_image_left():
     rotate_image(-90)
 
-def save_image():
+def save_image(warn=True):
     if not internalState.image_available():
         return
 
     image = internalState.current_image_rotated()
     path = internalState.current_image_complete_path()
     res = image.save(path)
-    internalState.reset_transformation(path)
 
     if res == 0:
-        print 'Uh oh!'
+        if warn == False:
+            print Exception('It is not possible to save changes to the images!')
+        else:
+            QtGui.QMessageBox.critical(mainWindow, 'Error saving image',
+                                       'It was not possible to save ' + \
+                                       'the changes to the image(s)!')
+    else:
+        internalState.reset_transformation(path)
 
 # Ask the user to select a directory and save it in 'internalState.directory'.
 def choose_images_to_keep():
