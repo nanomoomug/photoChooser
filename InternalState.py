@@ -111,6 +111,8 @@ class InternalState:
         self.currentPic = None
         self.nextPic = None
 
+    def reset_transformation(self, path):
+        del self.transformations[path]
 
     def is_at_last_position(self):
         return self.pos == len(self.imagesList) - 1
@@ -216,7 +218,6 @@ class InternalState:
                                                    self.transformations[path])
         else:
             return self.currentPic.getRotatedImage(path)
-        
 
     def set_scaled_image(self, newImage):
         self.currentPic.set_scaled_image(newImage)

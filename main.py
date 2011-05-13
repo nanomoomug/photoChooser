@@ -151,6 +151,7 @@ def save_image():
     image = internalState.current_image_rotated()
     path = internalState.current_image_complete_path()
     res = image.save(path)
+    internalState.reset_transformation(path)
 
     if res == 0:
         print 'Uh oh!'
