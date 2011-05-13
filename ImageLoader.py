@@ -30,8 +30,13 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-def scale_image(toScale, filename, maximumViewportSize, matrix=QtGui.QMatrix()):
+def scale_and_rotate_image(toScale, filename, maximumViewportSize,
+                           matrix=QtGui.QMatrix()):
+    toScale = rotate_image(toScale, filename, matrix)
     
+    return toScale.scaled(maximumViewportSize, QtCore.Qt.KeepAspectRatio)
+
+def rotate_image(toScale, filename, matrix=QtGui.QMatrix()):
     metadata = pyexiv2.metadata.ImageMetadata(str(filename))
     metadata.read()
     
@@ -67,8 +72,8 @@ def scale_image(toScale, filename, maximumViewportSize, matrix=QtGui.QMatrix()):
                 
     if not matrix.isIdentity():
         toScale = toScale.transformed(matrix)
-    
-    return toScale.scaled(maximumViewportSize, QtCore.Qt.KeepAspectRatio)
+
+    return toScale
 
 class ImageLoader(Thread):
     def __init__(self, filename, viewportSize, matrix=QtGui.QMatrix()):
@@ -79,7 +84,7 @@ class ImageLoader(Thread):
     
     def run(self):
         self.image = QtGui.QImage(self.filename)
-        self.imageScaled = scale_image(self.image,
+        self.imageScaled = scale_and_rotate_image(self.image,
                                        self.filename,
                                        self.maximumViewportSize,
                                        self.matrix)

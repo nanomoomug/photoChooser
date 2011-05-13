@@ -18,7 +18,7 @@ import os
 
 from PyQt4 import QtGui, QtCore
 
-from ImageLoader import ImageLoader, scale_image
+from ImageLoader import ImageLoader, scale_and_rotate_image, rotate_image
 from InternalException import InternalException
 
 __author__ = "Fernando Sanchez Villaamil"
@@ -62,12 +62,17 @@ class PreFetcher():
             self.fromLoader = False
 
         if self.toRescale:
-            self.imageScaled = scale_image(self.image, self.rescalePath,
-                                           self.rescaleViewportSize,
-                                           self.rescaleMatrix)
+            self.imageScaled = scale_and_rotate_image(self.image,
+                                                      self.rescalePath,
+                                                      self.rescaleViewportSize,
+                                                      self.rescaleMatrix)
             self.toRescale = False
 
         return (self.image, self.imageScaled)
+
+    def getRotatedImage(self, path, matrix=QtGui.QMatrix()):
+        (image,_) = self.getImages()
+        return rotate_image(image, path, matrix)
 
     def rescale(self, path, viewportSize, matrix=QtGui.QMatrix()):
         self.toRescale = True
@@ -194,12 +199,24 @@ class InternalState:
         (res,_) = self.currentPic.getImages()
         return res
 
-    def current_image_scaled(self):
+    def current_image_scaled_and_rotated(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
 
         (_,res) = self.currentPic.getImages()
         return res
+
+    def current_image_rotated(self):
+        if not self.image_available():
+            raise InternalException('There is no image available to be loaded.')
+
+        path = self.current_image_complete_path()
+        if path in self.transformations:
+            return self.currentPic.getRotatedImage(path,
+                                                   self.transformations[path])
+        else:
+            return self.currentPic.getRotatedImage(path)
+        
 
     def set_scaled_image(self, newImage):
         self.currentPic.set_scaled_image(newImage)

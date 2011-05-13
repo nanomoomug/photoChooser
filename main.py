@@ -56,7 +56,7 @@ global listView
 def show_image():
     if not internalState.image_available():
         return
-    image = internalState.current_image_scaled()
+    image = internalState.current_image_scaled_and_rotated()
     imageArea.setPixmap(image)
     text = "" + internalState.current_image_complete_path()
     pos = internalState.get_current_image_number()
@@ -148,7 +148,7 @@ def save_image():
     if not internalState.image_available():
         return
 
-    image = internalState.current_image()
+    image = internalState.current_image_rotated()
     path = internalState.current_image_complete_path()
     res = image.save(path)
 
