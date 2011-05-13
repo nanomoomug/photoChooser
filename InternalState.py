@@ -242,7 +242,8 @@ class InternalState:
         return n
 
     def get_images_list(self, dir):
-        # I got this list from the Qt documentation.
+        # I got this list from the Qt documentation of QImage:
+        # http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
         imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
                          '.ppm','.pmb','.pgm','.xbm','.xpm']
         allList = os.listdir(dir)
