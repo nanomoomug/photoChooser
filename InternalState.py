@@ -30,8 +30,6 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-alreadyInstantiated = False
-
 class PreFetcher():
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
@@ -81,7 +79,7 @@ class PreFetcher():
         if not self.fromLoader:
             self.imageScaled = newImage
 
-
+alreadyInstantiated = False #global variable to force singleton.
 class InternalState:
     def __init__(self):
         global alreadyInstantiated
