@@ -33,55 +33,55 @@ __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
 # Configuration variables, these should later be read from a config file
-rotationInHistory = True
-discardingInHistory = True
-automaticallySaveRotations = True
+ROTATION_IN_HISTORY = True
+DISCARDING_IN_HISTORY = True
+AUTOMATICALLY_SAVE_ROTATIONS = True
 
 # Global variables to contain the different parts of the GUI
-global actionChoose
-global actionQuit
-global actionFit
-global actionZoomIn
-global actionZoomOut
-global actionRotateRight
-global actionRotateLeft
-global actionSave
-global scrollArea
-global imageArea
-global statusBar
-global statusBarLabel
-global fileDialog
-global listView
+ACTION_CHOOSE = None
+ACTION_QUIT = None
+ACTION_FIT = None
+ACTION_ZOOM_IN = None
+ACTION_ZOOM_OUT = None
+ACTION_ROTATE_RIGHT = None
+ACTION_ROTATE_LEFT = None
+ACTION_SAVE = None
+SCROLL_AREA = None
+IMAGE_AREA = None
+STATUS_BAR = None
+STATUS_BAR_LABEL = None
+FILE_DIALOG = None
+LIST_VIEW = None
 
 ### Define some function that make up the functionality of the program.
 def show_image():
     if not internalState.image_available():
         return
     image = internalState.current_image_scaled_and_rotated()
-    imageArea.setPixmap(image)
+    IMAGE_AREA.setPixmap(image)
     text = "" + internalState.current_image_complete_path()
     pos = internalState.get_current_image_number()
     total = internalState.get_total_number_images()
     text += '  [' + str(pos) + '/' + str(total) + ']'
-    statusBarLabel.setText(text)
+    STATUS_BAR_LABEL.setText(text)
 
 def fit_image():
     if not internalState.image_available():
         return
     pix = internalState.current_image()
-    imageArea.setPixmap(pix.scaled(scrollArea.maximumViewportSize(),
+    IMAGE_AREA.setPixmap(pix.scaled(SCROLL_AREA.maximumViewportSize(),
                                    QtCore.Qt.KeepAspectRatio))
 
 def zoom(scaleFactor):
     if not internalState.image_available():
         return
     pix = internalState.current_image()
-    newSize = imageArea.size() * scaleFactor
-    imageArea.setPixmap(pix.scaled(newSize, QtCore.Qt.KeepAspectRatio))
-    newSize = imageArea.pixmap().size()
-    scrollArea.ensureVisible(newSize.width()/2.0,newSize.height()/2.0,
-                             scrollArea.maximumViewportSize().width()/2.0,
-                             scrollArea.maximumViewportSize().height()/2.0)
+    newSize = IMAGE_AREA.size() * scaleFactor
+    IMAGE_AREA.setPixmap(pix.scaled(newSize, QtCore.Qt.KeepAspectRatio))
+    newSize = IMAGE_AREA.pixmap().size()
+    SCROLL_AREA.ensureVisible(newSize.width()/2.0, newSize.height()/2.0,
+                             SCROLL_AREA.maximumViewportSize().width()/2.0,
+                             SCROLL_AREA.maximumViewportSize().height()/2.0)
 
 def zoom_in():
     zoom(1.25)
@@ -90,18 +90,18 @@ def zoom_out():
     zoom(0.8)
 
 def show_next_image():
-    internalState.next_image(scrollArea.maximumViewportSize())
+    internalState.next_image(SCROLL_AREA.maximumViewportSize())
     show_image()
 
 def show_previous_image():
-    internalState.previous_image(scrollArea.maximumViewportSize())
+    internalState.previous_image(SCROLL_AREA.maximumViewportSize())
     show_image()
 
 def discard_image():
     if not internalState.image_available():
         return
     
-    cd = internalState.current_directory();
+    cd = internalState.current_directory()
     if not os.path.exists(cd + '/discarded'):
         os.mkdir(cd + '/discarded')
     if not os.path.isdir(cd + '/discarded'):
@@ -112,9 +112,9 @@ def discard_image():
     position = internalState.pos
     shutil.move(internalState.current_image_complete_path(),
                 cd + '/discarded/' + filename)
-    internalState.discard_current_image(scrollArea.maximumViewportSize())
+    internalState.discard_current_image(SCROLL_AREA.maximumViewportSize())
 
-    if discardingInHistory:
+    if DISCARDING_IN_HISTORY:
         action = Actions.DeletionAction(internalState, cd, filename, position)
         internalState.add_to_history(action)
     
@@ -124,20 +124,20 @@ def discard_image():
         clear()
 
 def clear():
-    imageArea.clear()
-    statusBarLabel.clear()
-    imageArea.setText('No images loaded...')
+    IMAGE_AREA.clear()
+    STATUS_BAR_LABEL.clear()
+    IMAGE_AREA.setText('No images loaded...')
 
 def rotate_image(degrees):
     internalState.rotate_current_image(degrees,
-                                       scrollArea.maximumViewportSize())
+                                       SCROLL_AREA.maximumViewportSize())
     show_image()
-    if rotationInHistory:
+    if ROTATION_IN_HISTORY:
         action = Actions.RotationAction(internalState, degrees,
                                         internalState.pos)
         internalState.add_to_history(action)
 
-    if automaticallySaveRotations:
+    if AUTOMATICALLY_SAVE_ROTATIONS:
         save_image(False)
 
 
@@ -167,19 +167,19 @@ def save_image(warn=True):
 
 # Ask the user to select a directory and save it in 'internalState.directory'.
 def choose_images_to_keep():
-    if not fileDialog.exec_():
+    if not FILE_DIALOG.exec_():
         return
 
-    res = fileDialog.selectedFiles()
-    internalState.start(res, scrollArea.maximumViewportSize())
+    res = FILE_DIALOG.selectedFiles()
+    internalState.start(res, SCROLL_AREA.maximumViewportSize())
     show_next_image()
 
 def undo():
-    internalState.undo(scrollArea.maximumViewportSize())
+    internalState.undo(SCROLL_AREA.maximumViewportSize())
     show_image()
 
 def redo():
-    internalState.redo(scrollArea.maximumViewportSize())
+    internalState.redo(SCROLL_AREA.maximumViewportSize())
     show_image()
 
 if __name__ == '__main__':
@@ -188,65 +188,65 @@ if __name__ == '__main__':
     mainWindow = uic.loadUi('./qt/mainWindow.ui')
 
     # A global dialog to select files.
-    fileDialog = QtGui.QFileDialog(mainWindow)
-    fileDialog.setFileMode(QtGui.QFileDialog.Directory)
-    listView = fileDialog.findChild(QtGui.QListView,'listView')
-    listView.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+    FILE_DIALOG = QtGui.QFileDialog(mainWindow)
+    FILE_DIALOG.setFileMode(QtGui.QFileDialog.Directory)
+    LIST_VIEW = FILE_DIALOG.findChild(QtGui.QListView,'listView')
+    LIST_VIEW.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
 
     ### Get all the different parts of the gui that we need.
     # This is done like this in case we change the structure
     # in QtDesigner.
-    actionChoose = mainWindow.actionChoose
-    actionQuit = mainWindow.actionQuit
-    actionFit = mainWindow.action_Fit_to_Window
-    actionZoomIn = mainWindow.actionZoom_In
-    actionZoomOut = mainWindow.actionZoom_Out
-    actionRotateRight = mainWindow.action_Rotate_Right
-    actionRotateLeft = mainWindow.action_Rotate_Left
-    actionSave = mainWindow.actionSave
-    scrollArea = mainWindow.scrollArea
-    imageArea = mainWindow.imageLabel
-    statusBar = mainWindow.statusBar()
-    statusBarLabel = QtGui.QLabel('')
-    statusBar.addWidget(statusBarLabel)
+    ACTION_CHOOSE = mainWindow.actionChoose
+    ACTION_QUIT = mainWindow.actionQuit
+    ACTION_FIT = mainWindow.action_Fit_to_Window
+    ACTION_ZOOM_IN = mainWindow.actionZoom_In
+    ACTION_ZOOM_OUT = mainWindow.actionZoom_Out
+    ACTION_ROTATE_RIGHT = mainWindow.action_Rotate_Right
+    ACTION_ROTATE_LEFT = mainWindow.action_Rotate_Left
+    ACTION_SAVE = mainWindow.actionSave
+    SCROLL_AREA = mainWindow.scrollArea
+    IMAGE_AREA = mainWindow.imageLabel
+    STATUS_BAR = mainWindow.statusBar()
+    STATUS_BAR_LABEL = QtGui.QLabel('')
+    STATUS_BAR.addWidget(STATUS_BAR_LABEL)
 
     # Change the resize event so that the preloaded images are
     # resized.
-    originalResizeEvent = scrollArea.resizeEvent
+    originalResizeEvent = SCROLL_AREA.resizeEvent
     def f(event):
         originalResizeEvent(event)
-        viewportSize = scrollArea.maximumViewportSize()
+        viewportSize = SCROLL_AREA.maximumViewportSize()
         internalState.rescale_images(viewportSize)
-    scrollArea.resizeEvent = f
+    SCROLL_AREA.resizeEvent = f
 
     # TODO: Find a nice icon that I'm allowed to use.
     # mainWindow.setWindowIcon(QtGui.QIcon('./img/camera.jpg'))
 
     # Here signal-slot connections are added manually.
-    actionChoose.connect(actionChoose, QtCore.SIGNAL('triggered()'),
+    ACTION_CHOOSE.connect(ACTION_CHOOSE, QtCore.SIGNAL('triggered()'),
                          choose_images_to_keep)
-    actionQuit.connect(actionQuit, QtCore.SIGNAL('triggered()'),
+    ACTION_QUIT.connect(ACTION_QUIT, QtCore.SIGNAL('triggered()'),
                        QtGui.qApp, QtCore.SLOT('quit()'))
-    actionFit.connect(actionFit, QtCore.SIGNAL('triggered()'), fit_image)
-    actionZoomIn.connect(actionZoomIn, QtCore.SIGNAL('triggered()'), zoom_in)
-    actionZoomOut.connect(actionZoomOut, QtCore.SIGNAL('triggered()'), zoom_out)
-    actionRotateRight.connect(actionRotateRight, QtCore.SIGNAL('triggered()'),
+    ACTION_FIT.connect(ACTION_FIT, QtCore.SIGNAL('triggered()'), fit_image)
+    ACTION_ZOOM_IN.connect(ACTION_ZOOM_IN, QtCore.SIGNAL('triggered()'), zoom_in)
+    ACTION_ZOOM_OUT.connect(ACTION_ZOOM_OUT, QtCore.SIGNAL('triggered()'), zoom_out)
+    ACTION_ROTATE_RIGHT.connect(ACTION_ROTATE_RIGHT, QtCore.SIGNAL('triggered()'),
                               rotate_image_right)
-    actionRotateLeft.connect(actionRotateLeft, QtCore.SIGNAL('triggered()'),
+    ACTION_ROTATE_LEFT.connect(ACTION_ROTATE_LEFT, QtCore.SIGNAL('triggered()'),
                              rotate_image_left)
-    actionSave.connect(actionSave, QtCore.SIGNAL('triggered()'),
+    ACTION_SAVE.connect(ACTION_SAVE, QtCore.SIGNAL('triggered()'),
                              save_image)
-    nextImage = QtGui.QShortcut('N',mainWindow)
-    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_next_image)
-    nextImage = QtGui.QShortcut('B',mainWindow)
-    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'),
+    shortcut = QtGui.QShortcut('N',mainWindow)
+    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), show_next_image)
+    shortcut = QtGui.QShortcut('B',mainWindow)
+    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'),
                       show_previous_image)
-    nextImage = QtGui.QShortcut('D',mainWindow)
-    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), discard_image)
-    nextImage = QtGui.QShortcut('Z',mainWindow)
-    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), undo)
-    nextImage = QtGui.QShortcut('Y',mainWindow)
-    nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), redo)
+    shortcut = QtGui.QShortcut('D',mainWindow)
+    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), discard_image)
+    shortcut = QtGui.QShortcut('Z',mainWindow)
+    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), undo)
+    shortcut = QtGui.QShortcut('Y',mainWindow)
+    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), redo)
     
     internalState = InternalState()
     clear() #Put the program in its beginning state.
