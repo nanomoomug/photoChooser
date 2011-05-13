@@ -36,6 +36,22 @@ __status__ = "Just for fun!"
 rotationInHistory = True
 discardingInHistory = True
 
+# Global variables to contain the different parts of the GUI
+global actionChoose
+global actionQuit
+global actionFit
+global actionZoomIn
+global actionZoomOut
+global actionRotateRight
+global actionRotateLeft
+global actionSave
+global scrollArea
+global imageArea
+global statusBar
+global statusBarLabel
+global fileDialog
+global listView
+
 ### Define some function that make up the functionality of the program.
 def show_image():
     if not internalState.image_available():
@@ -128,6 +144,17 @@ def rotate_image_right():
 def rotate_image_left():
     rotate_image(-90)
 
+def save_image():
+    if not internalState.image_available():
+        return
+
+    image = internalState.current_image()
+    path = internalState.current_image_complete_path()
+    res = image.save(path)
+
+    if res == 0:
+        print 'Uh oh!'
+
 # Ask the user to select a directory and save it in 'internalState.directory'.
 def choose_images_to_keep():
     if not fileDialog.exec_():
@@ -146,20 +173,6 @@ def redo():
     show_image()
 
 if __name__ == '__main__':
-    global actionChoose
-    global actionQuit
-    global actionFit
-    global actionZoomIn
-    global actionZoomOut
-    global actionRotateRight
-    global actionRotateLeft
-    global scrollArea
-    global imageArea
-    global statusBar
-    global statusBarLabel
-    global fileDialog
-    global listView
-
     ### Load the main window object created with QtDesigner.
     app = QtGui.QApplication(sys.argv)
     mainWindow = uic.loadUi('./qt/mainWindow.ui')
@@ -180,6 +193,7 @@ if __name__ == '__main__':
     actionZoomOut = mainWindow.actionZoom_Out
     actionRotateRight = mainWindow.action_Rotate_Right
     actionRotateLeft = mainWindow.action_Rotate_Left
+    actionSave = mainWindow.actionSave
     scrollArea = mainWindow.scrollArea
     imageArea = mainWindow.imageLabel
     statusBar = mainWindow.statusBar()
@@ -210,6 +224,8 @@ if __name__ == '__main__':
                               rotate_image_right)
     actionRotateLeft.connect(actionRotateLeft, QtCore.SIGNAL('triggered()'),
                              rotate_image_left)
+    actionSave.connect(actionSave, QtCore.SIGNAL('triggered()'),
+                             save_image)
     nextImage = QtGui.QShortcut('N',mainWindow)
     nextImage.connect(nextImage, QtCore.SIGNAL('activated()'), show_next_image)
     nextImage = QtGui.QShortcut('B',mainWindow)
