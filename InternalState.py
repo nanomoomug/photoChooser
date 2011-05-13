@@ -42,7 +42,7 @@ class PreFetcher():
             self.imageScaled = viewportSize_imageScaled
             self.fromLoader = False
             self.toRescale = False
-        elif isinstance(filename_image, QtCore.QString) \
+        elif isinstance(filename_image, str) \
                and isinstance(viewportSize_imageScaled, QtCore.QSize):
             self.loader = ImageLoader(filename_image, viewportSize_imageScaled,
                                       matrix)
@@ -50,7 +50,10 @@ class PreFetcher():
             self.fromLoader = True
             self.toRescale = False
         else:
-            raise InternalException('Incorrect PreFetcher contructor.')
+            msg = 'Incorrect PreFetcher contructor: ' + \
+                  str(type(filename_image)) + ', ' + \
+                  str(type(viewportSize_imageScaled))
+            raise InternalException(msg)
 
     def getImages(self):
         if self.fromLoader:
@@ -246,18 +249,30 @@ class InternalState:
         # http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
         imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
                          '.ppm','.pmb','.pgm','.xbm','.xpm']
-        allList = os.listdir(dir)
+
+        dir = str(dir)
+
+        list = os.listdir(dir)
+        list = map(lambda x: dir + '/' + x, list)
+        directories = filter(os.path.isdir, list)
+        directories = filter(lambda x: not x.endswith('discarded'),
+                             directories)
+        files = filter(os.path.isfile, list)
+        
         selected = filter(lambda x:
-                          any(map(lambda y:
-                                  x.lower().endswith(y), imgExtensions)),
-                          allList)
-        return map(lambda x: (dir,x), selected)
+                          any(map(lambda y: x.lower().endswith(y),
+                                  imgExtensions)), files)
+        newImages = map(os.path.split, selected)
+        self.imagesList.extend(newImages)
+
+        for f in directories:
+            self.get_images_list(f)
 
     def start(self, dirList, viewportSize):
         self.imagesList = []
+
         for f in dirList:
-            if os.path.isdir(f):
-                self.imagesList.extend(self.get_images_list(f))
+            self.get_images_list(f)
 
         self.pos = -1
 
