@@ -35,6 +35,7 @@ __status__ = "Just for fun!"
 # Configuration variables, these should later be read from a config file
 rotationInHistory = True
 discardingInHistory = True
+automaticallySaveRotations = True
 
 # Global variables to contain the different parts of the GUI
 global actionChoose
@@ -136,6 +137,8 @@ def rotate_image(degrees):
                                         internalState.pos)
         internalState.add_to_history(action)
 
+    if automaticallySaveRotations:
+        save_image(False)
 
 
 def rotate_image_right():
@@ -153,7 +156,7 @@ def save_image(warn=True):
     res = image.save(path)
 
     if res == 0:
-        if warn == False:
+        if not warn:
             print Exception('It is not possible to save changes to the images!')
         else:
             QtGui.QMessageBox.critical(mainWindow, 'Error saving image',
