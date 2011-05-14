@@ -59,7 +59,7 @@ class PreFetcher():
                   str(type(viewportSize_imageScaled))
             raise InternalException(msg)
 
-    def getImages(self):
+    def get_images(self):
         if self.from_loader:
             self.loader.join()
             self.image = QtGui.QPixmap.fromImage(self.loader.image)
@@ -75,8 +75,8 @@ class PreFetcher():
 
         return (self.image, self.image_scaled)
 
-    def getRotatedImage(self, path, matrix=QtGui.QMatrix()):
-        (image,_) = self.getImages()
+    def get_rotated_image(self, path, matrix=QtGui.QMatrix()):
+        (image,_) = self.get_images()
         return rotate_image(image, path, matrix)
 
     def rescale(self, path, viewport_size, matrix=QtGui.QMatrix()):
@@ -203,14 +203,14 @@ class InternalState:
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
 
-        (res,_) = self.currentPic.getImages()
+        (res,_) = self.currentPic.get_images()
         return res
 
     def current_image_scaled_and_rotated(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
 
-        (_,res) = self.currentPic.getImages()
+        (_,res) = self.currentPic.get_images()
         return res
 
     def current_image_rotated(self):
@@ -219,10 +219,10 @@ class InternalState:
 
         path = self.current_image_complete_path()
         if path in self.transformations:
-            return self.currentPic.getRotatedImage(path,
+            return self.currentPic.get_rotated_image(path,
                                                    self.transformations[path])
         else:
-            return self.currentPic.getRotatedImage(path)
+            return self.currentPic.get_rotated_image(path)
 
     def set_scaled_image(self, newImage):
         self.currentPic.set_scaled_image(newImage)
