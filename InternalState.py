@@ -34,20 +34,25 @@ class PreFetcher():
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
 
+        # This variables are needed to handle rescaling later.
+        self.rescale_path = None
+        self.rescale_viewport_size = None
+        self.rescale_matrix = None
+
         if isinstance(filename_image, QtGui.QPixmap) \
                  and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
             self.image = filename_image
-            self.imageScaled = viewportSize_imageScaled
-            self.fromLoader = False
-            self.toRescale = False
+            self.image_scaled = viewportSize_imageScaled
+            self.from_loader = False
+            self.to_rescale = False
         elif (isinstance(filename_image, QtCore.QString) or \
                  isinstance(filename_image, str)) \
                and isinstance(viewportSize_imageScaled, QtCore.QSize):
             self.loader = ImageLoader(filename_image, viewportSize_imageScaled,
                                       matrix)
             self.loader.start()
-            self.fromLoader = True
-            self.toRescale = False
+            self.from_loader = True
+            self.to_rescale = False
         else:
             msg = 'Incorrect PreFetcher contructor: ' + \
                   str(type(filename_image)) + ', ' + \
@@ -55,34 +60,34 @@ class PreFetcher():
             raise InternalException(msg)
 
     def getImages(self):
-        if self.fromLoader:
+        if self.from_loader:
             self.loader.join()
             self.image = QtGui.QPixmap.fromImage(self.loader.image)
-            self.imageScaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
-            self.fromLoader = False
+            self.image_scaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
+            self.from_loader = False
 
-        if self.toRescale:
-            self.imageScaled = scale_and_rotate_image(self.image,
-                                                      self.rescalePath,
-                                                      self.rescaleViewportSize,
-                                                      self.rescaleMatrix)
-            self.toRescale = False
+        if self.to_rescale:
+            self.image_scaled = scale_and_rotate_image(self.image,
+                                                      self.rescale_path,
+                                                      self.rescale_viewport_size,
+                                                      self.rescale_matrix)
+            self.to_rescale = False
 
-        return (self.image, self.imageScaled)
+        return (self.image, self.image_scaled)
 
     def getRotatedImage(self, path, matrix=QtGui.QMatrix()):
         (image,_) = self.getImages()
         return rotate_image(image, path, matrix)
 
-    def rescale(self, path, viewportSize, matrix=QtGui.QMatrix()):
-        self.toRescale = True
-        self.rescalePath = path
-        self.rescaleViewportSize = viewportSize
-        self.rescaleMatrix = matrix
+    def rescale(self, path, viewport_size, matrix=QtGui.QMatrix()):
+        self.to_rescale = True
+        self.rescale_path = path
+        self.rescale_viewport_size = viewport_size
+        self.rescale_matrix = matrix
 
-    def set_scaled_image(self, newImage):
-        if not self.fromLoader:
-            self.imageScaled = newImage
+    def set_scaled_image(self, new_image):
+        if not self.from_loader:
+            self.image_scaled = new_image
 
 alreadyInstantiated = False #global variable to force singleton.
 class InternalState:
@@ -245,7 +250,7 @@ class InternalState:
             rescale(self.nextPic, self.pos + 1)
 
     def current_image_complete_path(self):
-         return self.current_image_complete_path_pos(self.pos)
+        return self.current_image_complete_path_pos(self.pos)
 
     def current_image_complete_path_pos(self, pos):
         if not self.image_available():
@@ -263,7 +268,7 @@ class InternalState:
 
     def get_images_list(self, dir):
         # I got this list from the Qt documentation of QImage:
-        # http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
+        #http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
         imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
                          '.ppm','.pmb','.pgm','.xbm','.xpm']
 
