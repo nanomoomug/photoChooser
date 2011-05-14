@@ -30,36 +30,36 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-def scale_and_rotate_image(toScale, filename, maximumViewportSize,
+def scale_and_rotate_image(to_scale, filename, maximum_viewport_size,
                            matrix=QtGui.QMatrix()):
-    toScale = rotate_image(toScale, filename, matrix)
+    to_scale = rotate_image(to_scale, filename, matrix)
     
-    return toScale.scaled(maximumViewportSize, QtCore.Qt.KeepAspectRatio)
+    return to_scale.scaled(maximum_viewport_size, QtCore.Qt.KeepAspectRatio)
 
-def rotate_image(toScale, filename, matrix=QtGui.QMatrix()):
+def rotate_image(to_scale, filename, matrix=QtGui.QMatrix()):
     metadata = pyexiv2.metadata.ImageMetadata(str(filename))
     metadata.read()
     
     if 'Exif.Image.Orientation' in metadata.exif_keys:
         orientation = metadata['Exif.Image.Orientation'].raw_value
         orientation = int(orientation)
-        preMatrix = QtGui.QMatrix()
+        pre_matrix = QtGui.QMatrix()
             
         if 1 <= orientation <= 2:
             if orientation == 2:
-                preMatrix.scale(-1, 1)
+                pre_matrix.scale(-1, 1)
         elif 7 <= orientation <= 8:
-            preMatrix.rotate(-90)
+            pre_matrix.rotate(-90)
             if orientation == 7:
-                preMatrix.scale(-1, 1)
+                pre_matrix.scale(-1, 1)
         elif 3 <= orientation <= 4:
-            preMatrix.rotate(180)
+            pre_matrix.rotate(180)
             if orientation == 4:
-                preMatrix.scale(-1, 1)
+                pre_matrix.scale(-1, 1)
         elif 5 <= orientation <= 6:
-            preMatrix.rotate(90)
+            pre_matrix.rotate(90)
             if orientation == 5:
-                preMatrix.scale(-1, 1)
+                pre_matrix.scale(-1, 1)
 
         if (orientation > 8):
             print Exception('The value for \'Exif.Image.Orientation\' '
@@ -67,24 +67,29 @@ def rotate_image(toScale, filename, matrix=QtGui.QMatrix()):
                             + 'the case. The Orientation shown may be '
                             + 'wrong.')
                 
-        if not preMatrix.isIdentity():
-            toScale = toScale.transformed(preMatrix)
+        if not pre_matrix.isIdentity():
+            to_scale = to_scale.transformed(pre_matrix)
                 
     if not matrix.isIdentity():
-        toScale = toScale.transformed(matrix)
+        to_scale = to_scale.transformed(matrix)
 
-    return toScale
+    return to_scale
 
 class ImageLoader(Thread):
-    def __init__(self, filename, viewportSize, matrix=QtGui.QMatrix()):
+    def __init__(self, filename, viewport_size, matrix=QtGui.QMatrix()):
         Thread.__init__(self)
         self.filename = filename
         self.matrix = matrix
-        self.maximumViewportSize = viewportSize
+        self.maximum_viewport_size = viewport_size
+        # These variables are set by run.
+        # If you try to acces the result of a thread before running it,
+        # it's your own fault.
+        self.image = None
+        self.image_scaled = None
     
     def run(self):
         self.image = QtGui.QImage(self.filename)
-        self.imageScaled = scale_and_rotate_image(self.image,
-                                       self.filename,
-                                       self.maximumViewportSize,
-                                       self.matrix)
+        self.image_scaled = scale_and_rotate_image(self.image,
+                                                   self.filename,
+                                                   self.maximum_viewport_size,
+                                                   self.matrix)

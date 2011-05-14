@@ -67,7 +67,7 @@ class PreFetcher():
         if self.from_loader:
             self.loader.join()
             self.image = QtGui.QPixmap.fromImage(self.loader.image)
-            self.image_scaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
+            self.image_scaled = QtGui.QPixmap.fromImage(self.loader.image_scaled)
             self.from_loader = False
 
         if self.to_rescale:
