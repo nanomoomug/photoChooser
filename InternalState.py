@@ -292,15 +292,13 @@ class InternalState:
         directory = str(directory)
 
         dir_list = os.listdir(directory)
-        dir_list = map(lambda x: directory + '/' + x, dir_list)
+        dir_list = [directory + '/' + x for x in dir_list]
         directories = filter(os.path.isdir, dir_list)
-        directories = filter(lambda x: not x.endswith('discarded'),
-                             directories)
+        directories = [x for x in directories if not x.endswith('discarded')]
         files = filter(os.path.isfile, dir_list)
-        
-        selected = filter(lambda x:
-                          any(map(lambda y: x.lower().endswith(y),
-                                  img_extensions)), files)
+
+        selected = [x for x in files
+                    if any([x.lower().endswith(y) for y in img_extensions])]
         new_images = map(os.path.split, selected)
         self.images_list.extend(new_images)
 
