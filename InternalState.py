@@ -81,7 +81,7 @@ class PreFetcher():
         return (self.image, self.image_scaled)
 
     def get_rotated_image(self, path, matrix=QtGui.QMatrix()):
-        (image,_) = self.get_images()
+        (image, _) = self.get_images()
         return rotate_image(image, path, matrix)
 
     def rescale(self, path, viewport_size, matrix=QtGui.QMatrix()):
