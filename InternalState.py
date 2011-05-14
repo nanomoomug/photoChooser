@@ -34,13 +34,13 @@ class PreFetcher():
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
 
-        # This variables are needed to handle rescaling later.
+        # This variables are needed later to handle rescaling.
         self.rescale_path = None
         self.rescale_viewport_size = None
         self.rescale_matrix = None
 
         if isinstance(filename_image, QtGui.QPixmap) \
-                 and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
+               and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
             self.image = filename_image
             self.image_scaled = viewportSize_imageScaled
             self.from_loader = False
