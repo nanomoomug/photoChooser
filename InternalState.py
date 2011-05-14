@@ -31,13 +31,17 @@ __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
 class PreFetcher():
+    class RescaleInfo:
+        def __init__(self):
+            self.rescale_path = None
+            self.rescale_viewport_size = None
+            self.rescale_matrix = None    
+    
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
 
         # This variables are needed later to handle rescaling.
-        self.rescale_path = None
-        self.rescale_viewport_size = None
-        self.rescale_matrix = None
+        self.rescale_info = PreFetcher.RescaleInfo()
 
         if isinstance(filename_image, QtGui.QPixmap) \
                and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
@@ -67,10 +71,11 @@ class PreFetcher():
             self.from_loader = False
 
         if self.to_rescale:
-            self.image_scaled = scale_and_rotate_image(self.image,
-                                                      self.rescale_path,
-                                                      self.rescale_viewport_size,
-                                                      self.rescale_matrix)
+            self.image_scaled = scale_and_rotate_image(
+                self.image,
+                self.rescale_info.rescale_path,
+                self.rescale_info.rescale_viewport_size,
+                self.rescale_info.rescale_matrix)
             self.to_rescale = False
 
         return (self.image, self.image_scaled)
@@ -81,9 +86,9 @@ class PreFetcher():
 
     def rescale(self, path, viewport_size, matrix=QtGui.QMatrix()):
         self.to_rescale = True
-        self.rescale_path = path
-        self.rescale_viewport_size = viewport_size
-        self.rescale_matrix = matrix
+        self.rescale_info.rescale_path = path
+        self.rescale_info.rescale_viewport_size = viewport_size
+        self.rescale_info.rescale_matrix = matrix
 
     def set_scaled_image(self, new_image):
         if not self.from_loader:
