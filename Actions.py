@@ -1,7 +1,4 @@
-
 import shutil
-
-import InternalState
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
