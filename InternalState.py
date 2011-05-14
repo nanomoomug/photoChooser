@@ -89,16 +89,16 @@ class PreFetcher():
         if not self.from_loader:
             self.image_scaled = new_image
 
-alreadyInstantiated = False #global variable to force singleton.
+ALREADY_INSTANTIATED = False #global variable to force singleton.
 class InternalState:
     def __init__(self):
-        global alreadyInstantiated
-        if alreadyInstantiated:
+        global ALREADY_INSTANTIATED
+        if ALREADY_INSTANTIATED:
             raise InternalException('InternalState instantiated more than one '
                                     + 'time. '
                                     + 'It should be treated as a singleton.')
         else:
-            alreadyInstantiated = True
+            ALREADY_INSTANTIATED = True
             self.reset()
 
     def reset(self):
