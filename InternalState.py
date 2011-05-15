@@ -90,6 +90,10 @@ class PreFetcher():
         self.rescale_info.rescale_viewport_size = viewport_size
         self.rescale_info.rescale_matrix = matrix
 
+    def set_image(self, new_image):
+        if not self.from_loader:
+            self.image = new_image
+
     def set_scaled_image(self, new_image):
         if not self.from_loader:
             self.image_scaled = new_image
@@ -240,6 +244,9 @@ class InternalState:
                 self.transformations[path])
         else:
             return self.current_pic.get_rotated_image(path)
+
+    def set_image(self, new_image):
+        self.current_pic.set_image(new_image)
 
     def set_scaled_image(self, new_image):
         self.current_pic.set_scaled_image(new_image)

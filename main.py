@@ -164,6 +164,7 @@ def save_image(warn=True):
                                        'It was not possible to save ' + \
                                        'the changes to the image(s)!')
     else:
+        INTERNAL_STATE.set_image(image)
         INTERNAL_STATE.reset_transformation(path)
 
 # Ask the user to select a directory and save it in 'INTERNAL_STATE.directory'.
