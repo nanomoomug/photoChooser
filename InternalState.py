@@ -35,7 +35,7 @@ class PreFetcher():
         def __init__(self):
             self.rescale_path = None
             self.rescale_viewport_size = None
-            self.rescale_matrix = None    
+            self.rescale_matrix = None
     
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):

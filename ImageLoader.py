@@ -32,11 +32,28 @@ __status__ = "Just for fun!"
 
 def scale_and_rotate_image(to_scale, filename, maximum_viewport_size,
                            matrix=QtGui.QMatrix()):
+    """Returns a scaled and rotated version of an image.
+
+    Keyword Arguments:
+    to_scale -- The image to be scaled.
+    filename -- The file path to the image.
+    maximum_viewport_size -- The size to which the image has to be scaled.
+    matrix -- A transformation matrix (default is identity)
+    """
     to_scale = rotate_image(to_scale, filename, matrix)
     
     return to_scale.scaled(maximum_viewport_size, QtCore.Qt.KeepAspectRatio)
 
-def rotate_image(to_scale, filename, matrix=QtGui.QMatrix()):
+def rotate_image(to_rotate, filename, matrix=QtGui.QMatrix()):
+    """Return a rotated version of an image.
+
+    The transformation matrix is given as an argument.
+
+    Keyword Arguments:
+    to_rotate -- The image to be rotated.
+    filename -- The file path to the image.
+    matrix -- A transformation matrix (default is identity)
+    """
     metadata = pyexiv2.metadata.ImageMetadata(str(filename))
     metadata.read()
     
@@ -68,14 +85,15 @@ def rotate_image(to_scale, filename, matrix=QtGui.QMatrix()):
                             + 'wrong.')
                 
         if not pre_matrix.isIdentity():
-            to_scale = to_scale.transformed(pre_matrix)
+            to_rotate = to_rotate.transformed(pre_matrix)
                 
     if not matrix.isIdentity():
-        to_scale = to_scale.transformed(matrix)
+        to_rotate = to_rotate.transformed(matrix)
 
-    return to_scale
+    return to_rotate
 
 class ImageLoader(Thread):
+    """An object used to load an image in a differente thread."""
     def __init__(self, filename, viewport_size, matrix=QtGui.QMatrix()):
         Thread.__init__(self)
         self.filename = filename
