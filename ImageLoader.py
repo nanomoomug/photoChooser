@@ -15,6 +15,9 @@ A threaded image loader. It will do two things:
 The reason why QImage is used and not QPixmap ---even though it may have to be
 converted later to QPixmap to be shown--- is that QPixmap can not be used
 outside of the main thread.
+
+Some of the functions that ImageLoader uses are useful in other places aswell.
+Thus these functions are not part of the ImageLoader, but are global functions.
 """
 
 from threading import Thread
@@ -100,11 +103,13 @@ class ImageLoader(Thread):
         self.filename = filename
         self.matrix = matrix
         self.maximum_viewport_size = viewport_size
-        # These variables are set by run.
+        # These variables are set by run().
         # If you try to acces the result of a thread before running it,
-        # it's your own fault.
+        # it's your own fault, but for debugging you can read if the thread
+        # ran in variable self.ran.
         self.image = None
         self.image_scaled = None
+        self.ran = False
     
     def run(self):
         self.image = QtGui.QImage(self.filename)
@@ -112,3 +117,4 @@ class ImageLoader(Thread):
                                                    self.filename,
                                                    self.maximum_viewport_size,
                                                    self.matrix)
+        self.ran = True
