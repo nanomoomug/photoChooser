@@ -5,11 +5,12 @@ A threaded ImageLoader.
 A threaded image loader. It will do two things:
 1. Load a 'QImage' into 'self.image' that is the exact image that was read from
    the filname given in the constructor.
-2. It will make a copy of the read image, attempt to read the Exif metadata of
-   the image file, get the orientation from the metadata, rotate the image
-   accordingly and finaly scale it the size of the viewport. The size of the
-   viewport must also be passed as an argument to the constructor. The
-   transformed image will be put in 'self.scaledImage'
+2. It will make a copy of the read 'self.image', attempt to read the Exif
+   metadata of the image file, get the orientation from the metadata, rotate the
+   image accordingly and finaly scale it the size of the viewport. The size of
+   the viewport must also be passed as an argument to the constructor. The
+   transformed image will be put in 'self.scaledImage'. A transformation matrix
+   can be passed and it will be used too.
 
 The reason why QImage is used and not QPixmap ---even though it may have to be
 converted later to QPixmap to be shown--- is that QPixmap can not be used
