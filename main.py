@@ -258,6 +258,23 @@ if __name__ == '__main__':
     shortcut = QtGui.QShortcut('Y', MAIN_WINDOW)
     shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), redo)
 
+    def get_button(label):
+        button = QtGui.QPushButton(label)
+        button.setFixedWidth(100)
+        button.setFixedHeight(40)
+        button.setFlat(True)
+        button.setStyleSheet('QPushButton { background-color: lightgrey; border: 1px solid black; border-radius: 7px; }')
+        return button
+    
+    layout = QtGui.QGridLayout(IMAGE_AREA)
+    layout.setSpacing(10)
+    
+    button = get_button('Ctrl+C\nSave')
+    button2 = get_button('Ctrl+D\nNext Image')
+
+    layout.addWidget(button,0,0)
+    layout.addWidget(button2,0,1)
+
     clear() #Put the program in its beginning state.
     MAIN_WINDOW.show()
     sys.exit(APP.exec_())
