@@ -213,6 +213,10 @@ if __name__ == '__main__':
     STATUS_BAR_LABEL = QtGui.QLabel('')
     STATUS_BAR.addWidget(STATUS_BAR_LABEL)
 
+    # Initialize the main object that is manipulated by the function of the
+    # program.
+    INTERNAL_STATE = InternalState()
+
     # Change the resize event so that the preloaded images are
     # resized.
     ORIGINAL_RESIZE_EVENT = SCROLL_AREA.resizeEvent
@@ -253,8 +257,7 @@ if __name__ == '__main__':
     shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), undo)
     shortcut = QtGui.QShortcut('Y', MAIN_WINDOW)
     shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), redo)
-    
-    INTERNAL_STATE = InternalState()
+
     clear() #Put the program in its beginning state.
     MAIN_WINDOW.show()
     sys.exit(APP.exec_())
