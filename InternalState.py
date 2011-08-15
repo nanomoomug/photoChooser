@@ -294,7 +294,7 @@ class InternalState:
         # I got this list from the Qt documentation of QImage:
         #http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
         img_extensions = ['.jpg', '.jpeg', '.bmp', '.gif', '.png',
-                         '.ppm', '.pmb', '.pgm', '.xbm', '.xpm']
+                          '.ppm', '.pmb', '.pgm', '.xbm', '.xpm']
 
         directory = str(directory)
 
