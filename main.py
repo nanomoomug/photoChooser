@@ -263,7 +263,7 @@ if __name__ == '__main__':
         label.setFixedWidth(100)
         label.setFixedHeight(40)
         label.setAlignment(QtCore.Qt.AlignCenter)
-        style = 'QLabel { background-color: lightgrey; \
+        style = 'QLabel { background-color: rgba(211,211,211,80%); \
                           border: 1px solid black; \
                           border-radius: 7px; }'
         label.setStyleSheet(style)
