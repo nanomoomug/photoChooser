@@ -270,7 +270,7 @@ if __name__ == '__main__':
         return label
     
     layout = QtGui.QGridLayout(IMAGE_AREA)
-    layout.setSpacing(10)
+    layout.setSpacing(15)
     layout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
     layout.setContentsMargins(0, 0, 0, 50)
     
@@ -282,6 +282,7 @@ if __name__ == '__main__':
     overlay6 = get_overlay_element('Ctrl+D\nNext Image')
     overlay7 = get_overlay_element('Ctrl+D\nRotate Left')
     overlay8 = get_overlay_element('Ctrl+D\nRotate Right')
+    overlay9 = get_overlay_element('Ctrl+D\nRotate Right')
 
     layout.addWidget(overlay,0,2)
     layout.addWidget(overlay2,1,1)
@@ -291,6 +292,37 @@ if __name__ == '__main__':
     layout.addWidget(overlay6,2,1)
     layout.addWidget(overlay7,2,2)
     layout.addWidget(overlay8,2,3)
+    layout.addWidget(overlay9,2,4)
+
+    list = [overlay,overlay2,overlay3,overlay4,overlay5,overlay6,overlay7,
+            overlay8,overlay9]
+
+    for i in list:
+        i.hide()
+
+    def f1(event):
+        if event.key() == QtCore.Qt.Key_Control:
+            for i in list:
+                i.show()
+        else:
+            for i in list:
+                i.hide()
+
+    def f2(event):
+        if event.key() == QtCore.Qt.Key_Control:
+            for i in list:
+                i.hide()
+
+    def f3(object, event):
+        if event.type() == QtCore.QEvent.KeyRelease:
+            for i in list:
+                i.hide()
+        return False
+
+    MAIN_WINDOW.keyPressEvent = f1
+    MAIN_WINDOW.keyReleaseEvent = f2
+    MAIN_WINDOW.eventFilter = f3
+    MAIN_WINDOW.installEventFilter(MAIN_WINDOW)
 
     clear() #Put the program in its beginning state.
     MAIN_WINDOW.show()
