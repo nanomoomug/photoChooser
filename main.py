@@ -269,7 +269,7 @@ if __name__ == '__main__':
         label.setStyleSheet(style)
         return label
     
-    layout = QtGui.QGridLayout(IMAGE_AREA)
+    layout = QtGui.QGridLayout(SCROLL_AREA)
     layout.setSpacing(15)
     layout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
     layout.setContentsMargins(0, 0, 0, 50)
@@ -309,9 +309,8 @@ if __name__ == '__main__':
                 i.hide()
 
     def f2(event):
-        if event.key() == QtCore.Qt.Key_Control:
-            for i in list:
-                i.hide()
+        for i in list:
+            i.hide()
 
     def f3(object, event):
         if event.type() == QtCore.QEvent.KeyRelease:
