@@ -36,6 +36,8 @@ __status__ = "Just for fun!"
 ROTATION_IN_HISTORY = True
 DISCARDING_IN_HISTORY = True
 AUTOMATICALLY_SAVE_ROTATIONS = True
+ZOOM_POSITIVE_FACTOR = 1.25
+ZOOM_NEGATIVE_FACTOR = 0.8
 
 # Global variables to contain the different parts of the GUI
 ACTION_CHOOSE = None
@@ -84,10 +86,10 @@ def zoom(scale_factor):
                              SCROLL_AREA.maximumViewportSize().height()/2.0)
 
 def zoom_in():
-    zoom(1.25)
+    zoom(ZOOM_POSITIVE_FACTOR)
 
 def zoom_out():
-    zoom(0.8)
+    zoom(ZOOM_NEGATIVE_FACTOR)
 
 def show_next_image():
     INTERNAL_STATE.next_image(SCROLL_AREA.maximumViewportSize())
@@ -243,7 +245,7 @@ if __name__ == '__main__':
                                 QtCore.SIGNAL('triggered()'),
                                 rotate_image_right)
     ACTION_ROTATE_LEFT.connect(ACTION_ROTATE_LEFT, QtCore.SIGNAL('triggered()'),
-                             rotate_image_left)
+                               rotate_image_left)
     ACTION_SAVE.connect(ACTION_SAVE, QtCore.SIGNAL('triggered()'),
                         save_image)
     shortcut = QtGui.QShortcut('N', MAIN_WINDOW)
