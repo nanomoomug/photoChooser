@@ -22,6 +22,7 @@ from PyQt4 import uic
 from InternalException import InternalException
 from InternalState import InternalState
 import Actions
+from Shortcuts import Shortcuts
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -251,17 +252,21 @@ if __name__ == '__main__':
                         save_image)
 
     # Make shortcuts work.
-    shortcut = QtGui.QShortcut('N', MAIN_WINDOW)
-    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), show_next_image)
-    shortcut = QtGui.QShortcut('B', MAIN_WINDOW)
-    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'),
-                     show_previous_image)
-    shortcut = QtGui.QShortcut('D', MAIN_WINDOW)
-    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), discard_image)
-    shortcut = QtGui.QShortcut('Z', MAIN_WINDOW)
-    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), undo)
-    shortcut = QtGui.QShortcut('Y', MAIN_WINDOW)
-    shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), redo)
+    #shortcut = QtGui.QShortcut('N', MAIN_WINDOW)
+    #shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), show_next_image)
+    #shortcut = QtGui.QShortcut('B', MAIN_WINDOW)
+    #shortcut.connect(shortcut, QtCore.SIGNAL('activated()'),
+    #                 show_previous_image)
+    #shortcut = QtGui.QShortcut('D', MAIN_WINDOW)
+    #shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), discard_image)
+    #shortcut = QtGui.QShortcut('Z', MAIN_WINDOW)
+    #shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), undo)
+    #shortcut = QtGui.QShortcut('Y', MAIN_WINDOW)
+    #shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), redo)
+
+    shortcuts = Shortcuts()
+    shortcuts.set_shortcuts(MAIN_WINDOW, show_next_image, show_previous_image,
+                            discard_image, undo, redo)
 
     def get_overlay_element(label):
         label = QtGui.QLabel(label)
