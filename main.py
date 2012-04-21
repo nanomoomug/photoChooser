@@ -53,7 +53,8 @@ STATUS_BAR_LABEL = None
 FILE_DIALOG = None
 LIST_VIEW = None
 
-### Define some function that make up the functionality of the program.
+### Define some function that make up the actions that the program can
+### perform.
 def show_image():
     if not INTERNAL_STATE.image_available():
         return
