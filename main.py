@@ -249,6 +249,8 @@ if __name__ == '__main__':
                                rotate_image_left)
     ACTION_SAVE.connect(ACTION_SAVE, QtCore.SIGNAL('triggered()'),
                         save_image)
+
+    # Make shortcuts work.
     shortcut = QtGui.QShortcut('N', MAIN_WINDOW)
     shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), show_next_image)
     shortcut = QtGui.QShortcut('B', MAIN_WINDOW)
