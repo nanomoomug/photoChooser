@@ -233,9 +233,9 @@ if __name__ == '__main__':
 
     # Here signal-slot connections are added manually.
     ACTION_CHOOSE.connect(ACTION_CHOOSE, QtCore.SIGNAL('triggered()'),
-                         choose_images_to_keep)
+                          choose_images_to_keep)
     ACTION_QUIT.connect(ACTION_QUIT, QtCore.SIGNAL('triggered()'),
-                       QtGui.qApp, QtCore.SLOT('quit()'))
+                        QtGui.qApp, QtCore.SLOT('quit()'))
     ACTION_FIT.connect(ACTION_FIT, QtCore.SIGNAL('triggered()'), fit_image)
     ACTION_ZOOM_IN.connect(ACTION_ZOOM_IN, QtCore.SIGNAL('triggered()'),
                            zoom_in)
