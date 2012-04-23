@@ -14,11 +14,11 @@ class Shortcuts:
     def __init__(self):
         # All strings representing shortcuts should end with
         # '_shortcut'.
-        self.next_image_shortcut = "N"
-        self.previous_image_shortcut = "B"
-        self.discard_image_shortcut = "D"
-        self.undo_shortcut = "Z"
-        self.redo_shortcut = "Y"
+        self.next_image_shortcut = QtGui.QKeySequence.MoveToNextPage
+        self.previous_image_shortcut = QtGui.QKeySequence.MoveToPreviousPage
+        self.discard_image_shortcut = QtGui.QKeySequence.Delete
+        self.undo_shortcut = QtGui.QKeySequence.Undo
+        self.redo_shortcut = QtGui.QKeySequence.Redo
 
     def set_shortcuts(self, window, next_image_func, previous_image_func,
                       discard_image_func, undo_func, redo_func):
