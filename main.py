@@ -311,7 +311,6 @@ if __name__ == '__main__':
         i.hide()
 
     def f1(event):
-        print event.isAutoRepeat()
         if event.key() == QtCore.Qt.Key_Control:
             for i in list:
                 i.show()
@@ -325,6 +324,7 @@ if __name__ == '__main__':
 
     MAIN_WINDOW.keyPressEvent = f1
     MAIN_WINDOW.keyReleaseEvent = f2
+    MAIN_WINDOW.focusOutEvent = f2
     MAIN_WINDOW.installEventFilter(MAIN_WINDOW)
 
     clear() #Put the program in its beginning state.
