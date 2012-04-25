@@ -275,12 +275,12 @@ if __name__ == '__main__':
     layout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
     layout.setContentsMargins(0, 0, 0, 50)
 
-    # shortcut_list = filter(lambda (k, v): k.endswith('_shortcut'),
-    #                        inspect.getmembers(SHORTCUTS))
+    shortcut_list = filter(lambda (k, v): k.endswith('_shortcut'),
+                           inspect.getmembers(SHORTCUTS))
 
-    # for sc in shortcut_list:
-    #     print sc
-    # print QtGui.QShortcut(QtGui.QKeySequence.MoveToNextPage, MAIN_WINDOW).key().toString()
+    for sc in shortcut_list:
+        print sc
+    print QtGui.QShortcut(QtGui.QKeySequence.MoveToNextPage, MAIN_WINDOW).key().toString()
     
     overlay = get_overlay_element('Ctrl+C\nSave')
     overlay2 = get_overlay_element('Ctrl+D\nNext Image')
