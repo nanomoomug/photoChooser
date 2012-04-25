@@ -306,6 +306,7 @@ if __name__ == '__main__':
     MAIN_WINDOW.focusOutEvent = f2
     MAIN_WINDOW.installEventFilter(MAIN_WINDOW)
 
-    clear() #Put the program in its beginning state.
+    # Put the program in its beginning state and start the main loop.
+    clear() 
     MAIN_WINDOW.show()
     sys.exit(APP.exec_())
