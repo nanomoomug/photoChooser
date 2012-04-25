@@ -15,6 +15,7 @@ shortcuts and the program is started by calling the qt main loop.
 import sys
 import os
 import shutil
+import inspect
 
 from PyQt4 import QtGui, QtCore
 from PyQt4 import uic
@@ -22,7 +23,7 @@ from PyQt4 import uic
 from InternalException import InternalException
 from InternalState import InternalState
 import Actions
-from Shortcuts import Shortcuts
+from Shortcuts import ShortcutsHandler
 
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
@@ -55,6 +56,9 @@ STATUS_BAR = None
 STATUS_BAR_LABEL = None
 FILE_DIALOG = None
 LIST_VIEW = None
+
+# Shortcuts container
+SHORTCUTS = ShortcutsHandler()
 
 ### Define some function that make up the actions that the program can
 ### perform.
@@ -252,8 +256,7 @@ if __name__ == '__main__':
                         save_image)
 
     # Make shortcuts work.
-    shortcuts = Shortcuts()
-    shortcuts.set_shortcuts(MAIN_WINDOW, show_next_image, show_previous_image,
+    SHORTCUTS.set_shortcuts(MAIN_WINDOW, show_next_image, show_previous_image,
                             discard_image, undo, redo)
 
     def get_overlay_element(label):
@@ -271,6 +274,13 @@ if __name__ == '__main__':
     layout.setSpacing(15)
     layout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
     layout.setContentsMargins(0, 0, 0, 50)
+
+    # shortcut_list = filter(lambda (k, v): k.endswith('_shortcut'),
+    #                        inspect.getmembers(SHORTCUTS))
+
+    # for sc in shortcut_list:
+    #     print sc
+    # print QtGui.QShortcut(QtGui.QKeySequence.MoveToNextPage, MAIN_WINDOW).key().toString()
     
     overlay = get_overlay_element('Ctrl+C\nSave')
     overlay2 = get_overlay_element('Ctrl+D\nNext Image')

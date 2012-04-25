@@ -10,7 +10,7 @@ def set_shortcut(window, shortcut_string, func):
     shortcut = QtGui.QShortcut(shortcut_string, window)
     shortcut.connect(shortcut, QtCore.SIGNAL('activated()'), func)
 
-class Shortcuts:
+class ShortcutsHandler:
     def __init__(self):
         # All strings representing shortcuts should end with
         # '_shortcut'.
