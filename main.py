@@ -15,7 +15,6 @@ shortcuts and the program is started by calling the qt main loop.
 import sys
 import os
 import shutil
-import inspect
 
 from PyQt4 import QtGui, QtCore
 from PyQt4 import uic
@@ -58,7 +57,7 @@ FILE_DIALOG = None
 LIST_VIEW = None
 
 # Shortcuts container
-SHORTCUTS = ShortcutsHandler()
+SHORTCUTS = None
 
 ### Define some function that make up the actions that the program can
 ### perform.
@@ -256,12 +255,13 @@ if __name__ == '__main__':
                         save_image)
 
     # Make shortcuts work.
-    SHORTCUTS.set_shortcuts(MAIN_WINDOW, show_next_image, show_previous_image,
+    SHORTCUTS = ShortcutsHandler(MAIN_WINDOW)
+    SHORTCUTS.set_shortcuts(show_next_image, show_previous_image,
                             discard_image, undo, redo)
 
     def get_overlay_element(label):
         label = QtGui.QLabel(label)
-        label.setFixedWidth(100)
+        label.setFixedWidth(120)
         label.setFixedHeight(40)
         label.setAlignment(QtCore.Qt.AlignCenter)
         style = 'QLabel { background-color: rgba(211,211,211,80%); \
@@ -275,49 +275,30 @@ if __name__ == '__main__':
     layout.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom)
     layout.setContentsMargins(0, 0, 0, 50)
 
-    shortcut_list = filter(lambda (k, v): k.endswith('_shortcut'),
-                           inspect.getmembers(SHORTCUTS))
+    shortcut_list = SHORTCUTS.get_all_shortcuts()
 
-    for sc in shortcut_list:
-        print sc
-    print QtGui.QShortcut(QtGui.QKeySequence.MoveToNextPage, MAIN_WINDOW).key().toString()
+    h = 0
+    all_overlays = []
+    for s in shortcut_list:
+        text = s.action_description + '\n' + s.qt_shortcut.key().toString()
+        overlay = get_overlay_element(text)
+        layout.addWidget(overlay, 0, h)
+        all_overlays.append(overlay)
+        h = h + 1
     
-    overlay = get_overlay_element('Ctrl+C\nSave')
-    overlay2 = get_overlay_element('Ctrl+D\nNext Image')
-    overlay3 = get_overlay_element('Ctrl+D\nRotate Left')
-    overlay4 = get_overlay_element('Ctrl+D\nRotate Right')
-    overlay5 = get_overlay_element('Ctrl+C\nSave')
-    overlay6 = get_overlay_element('Ctrl+D\nNext Image')
-    overlay7 = get_overlay_element('Ctrl+D\nRotate Left')
-    overlay8 = get_overlay_element('Ctrl+D\nRotate Right')
-    overlay9 = get_overlay_element('Ctrl+D\nRotate Right')
-
-    layout.addWidget(overlay,0,2)
-    layout.addWidget(overlay2,1,1)
-    layout.addWidget(overlay3,1,2)
-    layout.addWidget(overlay4,1,3)
-    layout.addWidget(overlay5,2,0)
-    layout.addWidget(overlay6,2,1)
-    layout.addWidget(overlay7,2,2)
-    layout.addWidget(overlay8,2,3)
-    layout.addWidget(overlay9,2,4)
-
-    list = [overlay,overlay2,overlay3,overlay4,overlay5,overlay6,overlay7,
-            overlay8,overlay9]
-
-    for i in list:
+    for i in all_overlays:
         i.hide()
 
     def f1(event):
         if event.key() == QtCore.Qt.Key_Control:
-            for i in list:
+            for i in all_overlays:
                 i.show()
         else:
-            for i in list:
+            for i in all_overlays:
                 i.hide()
 
     def f2(event):
-        for i in list:
+        for i in all_overlays:
             i.hide()
 
     MAIN_WINDOW.keyPressEvent = f1
