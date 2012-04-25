@@ -41,7 +41,7 @@ ZOOM_POSITIVE_FACTOR = 1.25
 ZOOM_NEGATIVE_FACTOR = 0.8
 
 # Global variables to contain the different parts of the GUI
-ACTION_CHOOSE = None
+ACTION_CHOOSE_FOLDER = None
 ACTION_QUIT = None
 ACTION_FIT = None
 ACTION_ZOOM_IN = None
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     ### Get all the different parts of the gui that we need.
     # This is done like this in case we change the structure
     # in QtDesigner.
-    ACTION_CHOOSE = MAIN_WINDOW.actionChoose
+    ACTION_CHOOSE_FOLDER = MAIN_WINDOW.actionChoose
     ACTION_QUIT = MAIN_WINDOW.actionQuit
     ACTION_FIT = MAIN_WINDOW.action_Fit_to_Window
     ACTION_ZOOM_IN = MAIN_WINDOW.actionZoom_In
@@ -237,25 +237,24 @@ if __name__ == '__main__':
     # MAIN_WINDOW.setWindowIcon(QtGui.QIcon('./img/camera.jpg'))
 
     # Here signal-slot connections are added manually.
-    ACTION_CHOOSE.connect(ACTION_CHOOSE, QtCore.SIGNAL('triggered()'),
-                          choose_images_to_keep)
     ACTION_QUIT.connect(ACTION_QUIT, QtCore.SIGNAL('triggered()'),
                         QtGui.qApp, QtCore.SLOT('quit()'))
-    ACTION_FIT.connect(ACTION_FIT, QtCore.SIGNAL('triggered()'), fit_image)
-    ACTION_ZOOM_IN.connect(ACTION_ZOOM_IN, QtCore.SIGNAL('triggered()'),
-                           zoom_in)
-    ACTION_ZOOM_OUT.connect(ACTION_ZOOM_OUT, QtCore.SIGNAL('triggered()'),
-                            zoom_out)
-    ACTION_ROTATE_RIGHT.connect(ACTION_ROTATE_RIGHT,
-                                QtCore.SIGNAL('triggered()'),
-                                rotate_image_right)
-    ACTION_ROTATE_LEFT.connect(ACTION_ROTATE_LEFT, QtCore.SIGNAL('triggered()'),
-                               rotate_image_left)
-    ACTION_SAVE.connect(ACTION_SAVE, QtCore.SIGNAL('triggered()'),
-                        save_image)
+
+    action_list = []
+    def connect_slot(action, action_description, func):
+        action.connect(action, QtCore.SIGNAL('triggered()'), func)
+        action_list.append((action, action_description))
+
+    connect_slot(ACTION_CHOOSE_FOLDER, 'Choose Folder', choose_images_to_keep)
+    connect_slot(ACTION_FIT, 'Choose Folder', fit_image)
+    connect_slot(ACTION_ZOOM_IN, 'Choose Folder', zoom_in)
+    connect_slot(ACTION_ZOOM_OUT, 'Choose Folder', zoom_out)
+    connect_slot(ACTION_ROTATE_RIGHT, 'Choose Folder', rotate_image_right)
+    connect_slot(ACTION_ROTATE_LEFT, 'Choose Folder', rotate_image_left)
+    connect_slot(ACTION_SAVE, 'Choose Folder', save_image)
 
     # Make shortcuts work.
-    SHORTCUTS = ShortcutsHandler(MAIN_WINDOW)
+    SHORTCUTS = ShortcutsHandler(MAIN_WINDOW, action_list)
     SHORTCUTS.set_shortcuts(show_next_image, show_previous_image,
                             discard_image, undo, redo)
 

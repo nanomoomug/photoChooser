@@ -15,7 +15,7 @@ class Shortcut:
         self.qt_shortcut.connect(self.qt_shortcut, QtCore.SIGNAL('activated()'), func)
 
 class ShortcutsHandler:
-    def __init__(self, window):
+    def __init__(self, window, program_actions):
         # All strings representing shortcuts should end with
         # '_shortcut'.
         next_image_qt_shortcut = QtGui.QShortcut(
@@ -42,6 +42,9 @@ class ShortcutsHandler:
                                                    'Discard Image')
         self.undo_shortcut = new_shortcut(undo_qt_shortcut, 'Undo')
         self.redo_shortcut = new_shortcut(redo_qt_shortcut, 'Redo')
+
+        for (s,d) in program_actions:
+            new_shortcut(QtGui.QShortcut(s.shortcut(), window), d)
 
     def set_shortcuts(self, next_image_func, previous_image_func,
                       discard_image_func, undo_func, redo_func):
