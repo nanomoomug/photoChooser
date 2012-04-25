@@ -246,12 +246,12 @@ if __name__ == '__main__':
         action_list.append((action, action_description))
 
     connect_slot(ACTION_CHOOSE_FOLDER, 'Choose Folder', choose_images_to_keep)
-    connect_slot(ACTION_FIT, 'Choose Folder', fit_image)
-    connect_slot(ACTION_ZOOM_IN, 'Choose Folder', zoom_in)
-    connect_slot(ACTION_ZOOM_OUT, 'Choose Folder', zoom_out)
-    connect_slot(ACTION_ROTATE_RIGHT, 'Choose Folder', rotate_image_right)
-    connect_slot(ACTION_ROTATE_LEFT, 'Choose Folder', rotate_image_left)
-    connect_slot(ACTION_SAVE, 'Choose Folder', save_image)
+    connect_slot(ACTION_FIT, 'Fit Image', fit_image)
+    connect_slot(ACTION_ZOOM_IN, 'Zoom In', zoom_in)
+    connect_slot(ACTION_ZOOM_OUT, 'Zoom Out', zoom_out)
+    connect_slot(ACTION_ROTATE_RIGHT, 'Rotate Right', rotate_image_right)
+    connect_slot(ACTION_ROTATE_LEFT, 'Rotate Left', rotate_image_left)
+    connect_slot(ACTION_SAVE, 'Save', save_image)
 
     # Make shortcuts work.
     SHORTCUTS = ShortcutsHandler(MAIN_WINDOW, action_list)
@@ -277,13 +277,18 @@ if __name__ == '__main__':
     shortcut_list = SHORTCUTS.get_all_shortcuts()
 
     h = 0
+    v = 0
+    horizontal_max = 4
     all_overlays = []
     for s in shortcut_list:
-        text = s.action_description + '\n' + s.qt_shortcut.key().toString()
+        text = s.action_description + '\n' + s.qt_key_sequence.toString()
         overlay = get_overlay_element(text)
-        layout.addWidget(overlay, 0, h)
+        layout.addWidget(overlay, v, h)
         all_overlays.append(overlay)
         h = h + 1
+        if h >= horizontal_max:
+            v = v + 1
+            h = 0
     
     for i in all_overlays:
         i.hide()

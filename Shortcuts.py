@@ -14,6 +14,14 @@ class Shortcut:
     def connect(self, func):
         self.qt_shortcut.connect(self.qt_shortcut, QtCore.SIGNAL('activated()'), func)
 
+    def key(self):
+        return self.qt_shortcut.key()
+
+class KeySequence:
+    def __init__(self, qt_key_sequence, action_description):
+        self.qt_key_sequence = qt_key_sequence
+        self.action_description = action_description
+
 class ShortcutsHandler:
     def __init__(self, window, program_actions):
         # All strings representing shortcuts should end with
@@ -31,7 +39,8 @@ class ShortcutsHandler:
 
         def new_shortcut(qt_shortcut, action_description):
             shortcut = Shortcut(qt_shortcut, action_description)
-            self.all_shortcuts.append(shortcut)
+            self.all_shortcuts.append(KeySequence(shortcut.key(),
+                                                  shortcut.action_description))
             return shortcut
             
         self.next_image_shortcut = new_shortcut(next_image_qt_shortcut,
@@ -43,8 +52,9 @@ class ShortcutsHandler:
         self.undo_shortcut = new_shortcut(undo_qt_shortcut, 'Undo')
         self.redo_shortcut = new_shortcut(redo_qt_shortcut, 'Redo')
 
-        for (s,d) in program_actions:
-            new_shortcut(QtGui.QShortcut(s.shortcut(), window), d)
+        for (qt_action, description) in program_actions:
+            self.all_shortcuts.append(KeySequence(qt_action.shortcut(),
+                                                  description))
 
     def set_shortcuts(self, next_image_func, previous_image_func,
                       discard_image_func, undo_func, redo_func):
