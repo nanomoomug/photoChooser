@@ -18,7 +18,7 @@ import os
 
 from PyQt4 import QtGui, QtCore
 
-from ImageLoader import ImageLoader, scale_image
+from ImageLoader import ImageLoader, scale_and_rotate_image, rotate_image
 from InternalException import InternalException
 
 __author__ = "Fernando Sanchez Villaamil"
@@ -30,86 +30,117 @@ __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
 __status__ = "Just for fun!"
 
-alreadyInstantiated = False
-
 class PreFetcher():
+    class RescaleInfo:
+        def __init__(self):
+            self.rescale_path = None
+            self.rescale_viewport_size = None
+            self.rescale_matrix = None
+    
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
 
+        # This variables are needed later to handle rescaling.
+        self.rescale_info = PreFetcher.RescaleInfo()
+
         if isinstance(filename_image, QtGui.QPixmap) \
-                 and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
+               and isinstance(viewportSize_imageScaled, QtGui.QPixmap):
             self.image = filename_image
-            self.imageScaled = viewportSize_imageScaled
-            self.fromLoader = False
-            self.toRescale = False
-        elif isinstance(filename_image, str) \
+            self.image_scaled = viewportSize_imageScaled
+            self.from_loader = False
+            self.to_rescale = False
+        elif (isinstance(filename_image, QtCore.QString) or \
+                 isinstance(filename_image, str)) \
                and isinstance(viewportSize_imageScaled, QtCore.QSize):
             self.loader = ImageLoader(filename_image, viewportSize_imageScaled,
                                       matrix)
             self.loader.start()
-            self.fromLoader = True
-            self.toRescale = False
+            self.from_loader = True
+            self.to_rescale = False
         else:
             msg = 'Incorrect PreFetcher contructor: ' + \
                   str(type(filename_image)) + ', ' + \
                   str(type(viewportSize_imageScaled))
             raise InternalException(msg)
 
-    def getImages(self):
-        if self.fromLoader:
+    def get_images(self):
+        if self.from_loader:
             self.loader.join()
             self.image = QtGui.QPixmap.fromImage(self.loader.image)
-            self.imageScaled = QtGui.QPixmap.fromImage(self.loader.imageScaled)
-            self.fromLoader = False
+            self.image_scaled = QtGui.QPixmap.fromImage(self.loader.image_scaled)
+            self.from_loader = False
 
-        if self.toRescale:
-            self.imageScaled = scale_image(self.image, self.rescalePath,
-                                           self.rescaleViewportSize,
-                                           self.rescaleMatrix)
-            self.toRescale = False
+        if self.to_rescale:
+            self.image_scaled = scale_and_rotate_image(
+                self.image,
+                self.rescale_info.rescale_path,
+                self.rescale_info.rescale_viewport_size,
+                self.rescale_info.rescale_matrix)
+            self.to_rescale = False
 
-        return (self.image, self.imageScaled)
+        return (self.image, self.image_scaled)
 
-    def rescale(self, path, viewportSize, matrix=QtGui.QMatrix()):
-        self.toRescale = True
-        self.rescalePath = path
-        self.rescaleViewportSize = viewportSize
-        self.rescaleMatrix = matrix
+    def get_rotated_image(self, path, matrix=QtGui.QMatrix()):
+        (image, _) = self.get_images()
+        return rotate_image(image, path, matrix)
 
-    def set_scaled_image(self, newImage):
-        if not self.fromLoader:
-            self.imageScaled = newImage
+    def rescale(self, path, viewport_size, matrix=QtGui.QMatrix()):
+        self.to_rescale = True
+        self.rescale_info.rescale_path = path
+        self.rescale_info.rescale_viewport_size = viewport_size
+        self.rescale_info.rescale_matrix = matrix
 
+    def set_image(self, new_image):
+        if not self.from_loader:
+            self.image = new_image
 
+    def set_scaled_image(self, new_image):
+        if not self.from_loader:
+            self.image_scaled = new_image
+
+ALREADY_INSTANTIATED = False #global variable to force singleton.
 class InternalState:
     def __init__(self):
-        global alreadyInstantiated
-        if alreadyInstantiated:
+        # All this variables should be instantiated by calling self.reset()
+        self.images_list = None
+        self.images_list = None
+        self.transformations = None
+        self.pos = None
+        self.recently_rescaled = None
+        self.history = None
+        self.forward_history = None
+        self.previous_pic = None
+        self.current_pic = None
+        self.next_pic = None
+        
+        global ALREADY_INSTANTIATED
+        if ALREADY_INSTANTIATED:
             raise InternalException('InternalState instantiated more than one '
                                     + 'time. '
                                     + 'It should be treated as a singleton.')
         else:
-            alreadyInstantiated = True
+            ALREADY_INSTANTIATED = True
             self.reset()
 
     def reset(self):
-        self.imagesList = []
+        self.images_list = []
         self.transformations = {}
         self.pos = -1
-        self.movingForward = True
-        self.recentlyRescaled = False
+        self.recently_rescaled = False
 
         self.history = []
-        self.forwardHistory = []
+        self.forward_history = []
 
         # These should later become pre-fetchers
-        self.previousPic = None
-        self.currentPic = None
-        self.nextPic = None
+        self.previous_pic = None
+        self.current_pic = None
+        self.next_pic = None
 
+    def reset_transformation(self, path):
+        del self.transformations[path]
 
     def is_at_last_position(self):
-        return self.pos == len(self.imagesList) - 1
+        return self.pos == len(self.images_list) - 1
 
     def is_at_first_position(self):
         return self.pos == 0
@@ -118,190 +149,203 @@ class InternalState:
         return self.pos + 1
 
     def get_total_number_images(self):
-        return len(self.imagesList)
+        return len(self.images_list)
 
-    def make_path_fetcher(self, path, viewportSize):
+    def make_path_fetcher(self, path, viewport_size):
         if path in self.transformations:
-            return PreFetcher(path, viewportSize, self.transformations[path])
+            return PreFetcher(path, viewport_size, self.transformations[path])
         else:
-            return PreFetcher(path, viewportSize)
+            return PreFetcher(path, viewport_size)
 
-    def next_image(self, viewportSize):
+    def next_image(self, viewport_size):
         self.pos += 1
 
-        if (self.pos >= len(self.imagesList)):
-            self.pos = len(self.imagesList) - 1
+        if (self.pos >= len(self.images_list)):
+            self.pos = len(self.images_list) - 1
             return
 
-        self.previousPic = self.currentPic
+        self.previous_pic = self.current_pic
 
-        self.currentPic = self.nextPic
-        if self.recentlyRescaled:
-            self.recentlyRescaled = False
+        self.current_pic = self.next_pic
+        if self.recently_rescaled:
+            self.recently_rescaled = False
             path = self.current_image_complete_path()
-            self.currentPic.rescale(path, viewportSize)
+            self.current_pic.rescale(path, viewport_size)
 
-        if self.pos < len(self.imagesList) - 1:
+        if self.pos < len(self.images_list) - 1:
             path = self.current_image_complete_path_pos(self.pos + 1)
-            self.nextPic = self.make_path_fetcher(path, viewportSize)
+            self.next_pic = self.make_path_fetcher(path, viewport_size)
 
-    def previous_image(self, viewportSize):
+    def previous_image(self, viewport_size):
         self.pos -= 1
 
         if (self.pos < 0):
             self.pos = 0
             return
 
-        self.nextPic = self.currentPic
+        self.next_pic = self.current_pic
 
-        self.currentPic = self.previousPic
-        if self.recentlyRescaled:
-            self.recentlyRescaled = False
+        self.current_pic = self.previous_pic
+        if self.recently_rescaled:
+            self.recently_rescaled = False
             path = self.current_image_complete_path_pos(self.pos + 1)
-            self.currentPic.rescale(path, viewportSize)
+            self.current_pic.rescale(path, viewport_size)
 
         if self.pos > 0:
             path = self.current_image_complete_path_pos(self.pos - 1)
-            self.previousPic = self.make_path_fetcher(path, viewportSize)
+            self.previous_pic = self.make_path_fetcher(path, viewport_size)
 
-    def add_image(self, path, filename, pos, viewportSize):
-        self.imagesList.insert(pos, (path,filename))
-        self.jump_to_image(pos, viewportSize)
+    def add_image(self, path, filename, pos, viewport_size):
+        self.images_list.insert(pos, (path, filename))
+        self.jump_to_image(pos, viewport_size)
 
-    def jump_to_image(self, newPos, viewportSize):
-        if newPos < 0 or newPos >= len(self.imagesList):
+    def jump_to_image(self, new_pos, viewport_size):
+        if new_pos < 0 or new_pos >= len(self.images_list):
             return
 
-        self.pos = newPos
+        self.pos = new_pos
 
         if self.pos - 1 >= 0:
             path = self.current_image_complete_path_pos(self.pos - 1)
-            self.previousPic = self.make_path_fetcher(path, viewportSize)
+            self.previous_pic = self.make_path_fetcher(path, viewport_size)
 
         path = self.current_image_complete_path_pos(self.pos)
-        self.currentPic = self.make_path_fetcher(path, viewportSize)
+        self.current_pic = self.make_path_fetcher(path, viewport_size)
 
-        if self.pos + 1 < len(self.imagesList):
+        if self.pos + 1 < len(self.images_list):
             path = self.current_image_complete_path_pos(self.pos + 1)
-            self.nextPic = self.make_path_fetcher(path, viewportSize)
+            self.next_pic = self.make_path_fetcher(path, viewport_size)
 
     def image_available(self):
-        return not len(self.imagesList) == 0
+        return not len(self.images_list) == 0
 
     def current_image(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
 
-        (res,_) = self.currentPic.getImages()
+        (res, _) = self.current_pic.get_images()
         return res
 
-    def current_image_scaled(self):
+    def current_image_scaled_and_rotated(self):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
 
-        (_,res) = self.currentPic.getImages()
+        (_, res) = self.current_pic.get_images()
         return res
 
-    def set_scaled_image(self, newImage):
-        self.currentPic.set_scaled_image(newImage)
+    def current_image_rotated(self):
+        if not self.image_available():
+            raise InternalException('There is no image available to be loaded.')
 
-    def rescale_images(self, viewportSize):
+        path = self.current_image_complete_path()
+        if path in self.transformations:
+            return self.current_pic.get_rotated_image(
+                path,
+                self.transformations[path])
+        else:
+            return self.current_pic.get_rotated_image(path)
+
+    def set_image(self, new_image):
+        self.current_pic.set_image(new_image)
+
+    def set_scaled_image(self, new_image):
+        self.current_pic.set_scaled_image(new_image)
+
+    def rescale_images(self, viewport_size):
         if not self.image_available():
             return
 
-        self.recentlyRescaled = True
+        self.recently_rescaled = True
 
         def rescale(fetcher, pos):
             path = self.current_image_complete_path_pos(pos)
             if path in self.transformations:
-                fetcher.rescale(path, viewportSize, self.transformations[path])
+                fetcher.rescale(path, viewport_size, self.transformations[path])
             else:
-                fetcher.rescale(path, viewportSize)
+                fetcher.rescale(path, viewport_size)
 
-        if self.previousPic is not None and self.pos > 0:
-            rescale(self.previousPic, self.pos - 1)
+        if self.previous_pic is not None and self.pos > 0:
+            rescale(self.previous_pic, self.pos - 1)
 
-        if self.currentPic is not None:
-            rescale(self.currentPic, self.pos)
+        if self.current_pic is not None:
+            rescale(self.current_pic, self.pos)
 
-        if self.nextPic is not None  and self.pos < len(self.imagesList) - 1:
-            rescale(self.nextPic, self.pos + 1)
+        if self.next_pic is not None  and self.pos < len(self.images_list) - 1:
+            rescale(self.next_pic, self.pos + 1)
 
     def current_image_complete_path(self):
-         return self.current_image_complete_path_pos(self.pos)
+        return self.current_image_complete_path_pos(self.pos)
 
     def current_image_complete_path_pos(self, pos):
         if not self.image_available():
             raise InternalException('There is no image available to be loaded.')
-        (dir,f) = self.imagesList[pos]
-        return dir + '/' + f
+        (d, f) = self.images_list[pos]
+        return d + '/' + f
 
     def current_directory(self):
-        (d,_) = self.imagesList[self.pos]
+        (d, _) = self.images_list[self.pos]
         return d
 
     def current_image_name(self):
-        (_,n) = self.imagesList[self.pos]
+        (_, n) = self.images_list[self.pos]
         return n
 
-    def get_images_list(self, dir):
+    def get_images_list(self, directory):
         # I got this list from the Qt documentation of QImage:
-        # http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
-        imgExtensions = ['.jpg','.jpeg','.bmp','.gif','.png',
-                         '.ppm','.pmb','.pgm','.xbm','.xpm']
+        #http://doc.qt.nokia.com/4.7/qimage.html#reading-and-writing-image-files
+        img_extensions = ['.jpg', '.jpeg', '.bmp', '.gif', '.png',
+                          '.ppm', '.pmb', '.pgm', '.xbm', '.xpm']
 
-        dir = str(dir)
+        directory = str(directory)
 
-        list = os.listdir(dir)
-        list = map(lambda x: dir + '/' + x, list)
-        directories = filter(os.path.isdir, list)
-        directories = filter(lambda x: not x.endswith('discarded'),
-                             directories)
-        files = filter(os.path.isfile, list)
-        
-        selected = filter(lambda x:
-                          any(map(lambda y: x.lower().endswith(y),
-                                  imgExtensions)), files)
-        newImages = map(os.path.split, selected)
-        self.imagesList.extend(newImages)
+        dir_list = os.listdir(directory)
+        dir_list = [directory + '/' + x for x in dir_list]
+        directories = filter(os.path.isdir, dir_list)
+        directories = [x for x in directories if not x.endswith('discarded')]
+        files = filter(os.path.isfile, dir_list)
+
+        selected = [x for x in files
+                    if any([x.lower().endswith(y) for y in img_extensions])]
+        new_images = map(os.path.split, selected)
+        self.images_list.extend(new_images)
 
         for f in directories:
             self.get_images_list(f)
 
-    def start(self, dirList, viewportSize):
-        self.imagesList = []
+    def start(self, dir_list, viewport_size):
+        self.images_list = []
 
-        for f in dirList:
+        for f in dir_list:
             self.get_images_list(f)
 
         self.pos = -1
 
-        if len(self.imagesList) == 0:
+        if len(self.images_list) == 0:
             return
 
         # currentPic being invalid can only cause problems...
-        self.previousPic = PreFetcher(QtGui.QPixmap(), QtGui.QPixmap())
-        self.currentPic = PreFetcher(QtGui.QPixmap(), QtGui.QPixmap())
+        self.previous_pic = PreFetcher(QtGui.QPixmap(), QtGui.QPixmap())
+        self.current_pic = PreFetcher(QtGui.QPixmap(), QtGui.QPixmap())
 
         path = self.current_image_complete_path_pos(0)
-        self.nextPic = self.make_path_fetcher(path, viewportSize)
+        self.next_pic = self.make_path_fetcher(path, viewport_size)
 
-    def discard_current_image(self, viewportSize):
-        del self.imagesList[self.pos]
+    def discard_current_image(self, viewport_size):
+        del self.images_list[self.pos]
 
-        if len(self.imagesList) == 0:
+        if len(self.images_list) == 0:
             self.reset()
             return
 
-        if self.pos >= len(self.imagesList):
-            self.previous_image(viewportSize)
+        if self.pos >= len(self.images_list):
+            self.previous_image(viewport_size)
         else:
-            self.currentPic = self.nextPic
-            if self.pos < len(self.imagesList) - 1:
+            self.current_pic = self.next_pic
+            if self.pos < len(self.images_list) - 1:
                 path = self.current_image_complete_path_pos(self.pos + 1)
-                self.nextPic = self.make_path_fetcher(path, viewportSize)
+                self.next_pic = self.make_path_fetcher(path, viewport_size)
 
-    def rotate_current_image(self, degrees, viewportSize):
+    def rotate_current_image(self, degrees, viewport_size):
         name = self.current_image_complete_path()
         if name in self.transformations:
             matrix = self.transformations[name]
@@ -309,7 +353,7 @@ class InternalState:
             matrix = QtGui.QMatrix()
         matrix.rotate(degrees)
         pix = self.current_image()
-        transformed = pix.transformed(matrix).scaled(viewportSize,
+        transformed = pix.transformed(matrix).scaled(viewport_size,
                                                      QtCore.Qt.KeepAspectRatio)
 
         self.set_scaled_image(transformed)
@@ -319,25 +363,25 @@ class InternalState:
         self.history.insert(0, action)
 
     def add_to_forward_history(self, action):
-        self.forwardHistory.insert(0, action)
+        self.forward_history.insert(0, action)
 
     def clear_forward_history(self):
-        self.forwardHistory = []
+        self.forward_history = []
 
-    def undo(self, viewportSize):
+    def undo(self, viewport_size):
         if len(self.history) == 0:
             return
 
         action = self.history[0]
         del self.history[0]
-        action.undo(viewportSize)
+        action.undo(viewport_size)
         self.add_to_forward_history(action)
 
-    def redo(self, viewportSize):
-        if len(self.forwardHistory) == 0:
+    def redo(self, viewport_size):
+        if len(self.forward_history) == 0:
             return
 
-        action = self.forwardHistory[0]
-        del self.forwardHistory[0]
-        action.redo(viewportSize)
+        action = self.forward_history[0]
+        del self.forward_history[0]
+        action.redo(viewport_size)
         self.add_to_history(action)
