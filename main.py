@@ -240,10 +240,10 @@ if __name__ == '__main__':
     ACTION_QUIT.connect(ACTION_QUIT, QtCore.SIGNAL('triggered()'),
                         QtGui.qApp, QtCore.SLOT('quit()'))
 
-    action_list = []
-    def connect_slot(action, action_description, func):
-        action.connect(action, QtCore.SIGNAL('triggered()'), func)
-        action_list.append((action, action_description))
+    ACTION_LIST = []
+    def connect_slot(action, action_description, action_func):
+        action.connect(action, QtCore.SIGNAL('triggered()'), action_func)
+        ACTION_LIST.append((action, action_description))
 
     connect_slot(ACTION_CHOOSE_FOLDER, 'Choose Folder', choose_images_to_keep)
     connect_slot(ACTION_FIT, 'Fit Image', fit_image)
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     connect_slot(ACTION_SAVE, 'Save', save_image)
 
     # Make shortcuts work.
-    SHORTCUTS = ShortcutsHandler(MAIN_WINDOW, action_list)
+    SHORTCUTS = ShortcutsHandler(MAIN_WINDOW, ACTION_LIST)
     SHORTCUTS.set_shortcuts(show_next_image, show_previous_image,
                             discard_image, undo, redo)
 
@@ -281,8 +281,8 @@ if __name__ == '__main__':
     horizontal_max = 4
     all_overlays = []
     for s in shortcut_list:
-        text = s.action_description() + '\n' + s.key_sequence_string()
-        overlay = get_overlay_element(text)
+        description = s.action_description() + '\n' + s.key_sequence_string()
+        overlay = get_overlay_element(description)
         layout.addWidget(overlay, v, h)
         all_overlays.append(overlay)
         h = h + 1
