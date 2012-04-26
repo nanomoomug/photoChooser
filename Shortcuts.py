@@ -12,15 +12,22 @@ class Shortcut:
         self.action_description = action_description
 
     def connect(self, func):
-        self.qt_shortcut.connect(self.qt_shortcut, QtCore.SIGNAL('activated()'), func)
+        self.qt_shortcut.connect(self.qt_shortcut, QtCore.SIGNAL('activated()'),
+                                 func)
 
     def key(self):
         return self.qt_shortcut.key()
 
 class KeySequence:
-    def __init__(self, qt_key_sequence, action_description):
+    def __init__(self, qt_key_sequence, action_description_string):
         self.qt_key_sequence = qt_key_sequence
-        self.action_description = action_description
+        self.action_description_string = action_description_string
+
+    def key_sequence_string(self):
+        return self.qt_key_sequence.toString()
+
+    def action_description(self):
+        return self.action_description_string
 
 class ShortcutsHandler:
     def __init__(self, window, program_actions):

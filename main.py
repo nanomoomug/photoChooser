@@ -281,7 +281,7 @@ if __name__ == '__main__':
     horizontal_max = 4
     all_overlays = []
     for s in shortcut_list:
-        text = s.action_description + '\n' + s.qt_key_sequence.toString()
+        text = s.action_description() + '\n' + s.key_sequence_string()
         overlay = get_overlay_element(text)
         layout.addWidget(overlay, v, h)
         all_overlays.append(overlay)
