@@ -28,7 +28,7 @@ import pyexiv2
 __author__ = "Fernando Sanchez Villaamil"
 __copyright__ = "Copyright 2010, Fernando Sanchez Villaamil"
 __credits__ = ["Fernando Sanchez Villaamil"]
-__license__ = "GPL"
+__license__ = "MIT"
 __version__ = "1.0beta"
 __maintainer__ = "Fernando Sanchez Villaamil"
 __email__ = "nano@moomug.com"
