@@ -40,7 +40,7 @@ class PreFetcher():
     def __init__(self, filename_image, viewportSize_imageScaled,
                  matrix=QtGui.QMatrix()):
 
-        # This variables are needed later to handle rescaling.
+        # These variables are needed later to handle rescaling.
         self.rescale_info = PreFetcher.RescaleInfo()
 
         if isinstance(filename_image, QtGui.QPixmap) \
@@ -101,7 +101,7 @@ class PreFetcher():
 ALREADY_INSTANTIATED = False #global variable to force singleton.
 class InternalState:
     def __init__(self):
-        # All this variables should be instantiated by calling self.reset()
+        # All these variables should be instantiated by calling self.reset()
         self.images_list = None
         self.images_list = None
         self.transformations = None
